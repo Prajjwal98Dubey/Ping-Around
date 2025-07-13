@@ -41,6 +41,10 @@ export const validateGoogleAuth = async (req, res) => {
         "INSERT INTO USERS (USER_ID,USER_EMAIL,FIRST_NAME,USER_IMAGE,REFRESH_TOKEN,THIRD_PARTY_LOGIN) VALUES ($1,$2,$3,$4,$5,$6)",
         [userId, email, name, picture, refreshToken, true]
       );
+      await pingPool.query(
+        "INSERT INTO USER_SOCIALS (USER_ID,USER_LINKEDIN,USER_GITHUB,USER_INSTAGRAM,USER_TWITTER,USER_FACEBOOK,USER_REDDIT,USER_RANDOM_SOCIAL) VALUES ($1,null,null,null,null,null,null,null)",
+        [userId]
+      );
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
         sameSite: "lax",
@@ -52,6 +56,21 @@ export const validateGoogleAuth = async (req, res) => {
           user_email: email,
           first_name: name,
           user_image: picture,
+          last_name: null,
+          gender: null,
+          phone: null,
+          bio: null,
+          city: null,
+          country: null,
+          country_code: null,
+          profession: null,
+          user_linkedin: null,
+          user_github: null,
+          user_instagram: null,
+          user_twitter: null,
+          user_reddit: null,
+          user_facebook: null,
+          user_random_social: null,
         },
       });
     }
@@ -78,13 +97,38 @@ export const registerUser = async (req, res) => {
         "INSERT INTO USERS (USER_ID,USER_EMAIL,FIRST_NAME,REFRESH_TOKEN,USER_PASSWORD) VALUES ($1,$2,$3,$4,$5)",
         [userId, email, firstName, refreshToken, encryptPassword]
       );
+      await pingPool.query(
+        "INSERT INTO USER_SOCIALS (USER_ID,USER_LINKEDIN,USER_GITHUB,USER_INSTAGRAM,USER_TWITTER,USER_FACEBOOK,USER_REDDIT,USER_RANDOM_SOCIAL) VALUES ($1,null,null,null,null,null,null,null)",
+        [userId]
+      );
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
         sameSite: "lax",
       });
-      return res
-        .status(201)
-        .json({ message: "user registered", userDetails: userDetails.user });
+      return res.status(201).json({
+        message: "user registered",
+        userDetails: {
+          user_id: userId,
+          first_name: firstName,
+          user_email: email,
+          last_name: null,
+          gender: null,
+          phone: null,
+          user_image: null,
+          bio: null,
+          city: null,
+          country: null,
+          country_code: null,
+          profession: null,
+          user_linkedin: null,
+          user_github: null,
+          user_instagram: null,
+          user_twitter: null,
+          user_reddit: null,
+          user_facebook: null,
+          user_random_social: null,
+        },
+      });
     }
   } catch (err) {
     console.log("something went wrong", err);
@@ -134,6 +178,71 @@ export const loginUser = async (req, res) => {
   }
 };
 
+export const editUser = async (req, res) => {
+  const user_socials_list = [
+    "user_linkedin",
+    "user_github",
+    "user_instagram",
+    "user_twitter",
+    "user_reddit",
+    "user_facebook",
+    "user_random_social",
+  ];
+  const userId = req.userId;
+  const updatedField = req.body;
+  try {
+    let userDetailsQuery = [];
+    let userSocailsQuery = [];
+    for (let key in updatedField) {
+      if (user_socials_list.includes(key)) {
+        if (updatedField[key]) {
+          userSocailsQuery.push(`${key}='${updatedField[key]}'`);
+        } else {
+          userSocailsQuery.push(`${key}=${updatedField[key]}`);
+        }
+      } else {
+        if (updatedField[key]) {
+          userDetailsQuery.push(`${key}='${updatedField[key]}'`);
+        } else {
+          userDetailsQuery.push(`${key}=${updatedField[key]}`);
+        }
+      }
+    }
+    if (userDetailsQuery.length)
+      await pingPool.query(
+        `UPDATE USERS SET ${userDetailsQuery.join(
+          ","
+        )} WHERE USER_ID = '${userId}'`
+      );
+    if (userSocailsQuery.length) {
+      let isSocialsPresent = await pingPool.query(
+        "SELECT USER_ID FROM USER_SOCIALS WHERE USER_ID = $1",
+        [userId]
+      );
+      if (isSocialsPresent.rowCount) {
+        await pingPool.query(
+          `UPDATE USER_SOCIALS SET ${userSocailsQuery.join(
+            ","
+          )} WHERE USER_ID = '${userId}'`
+        );
+      } else {
+        let queryList = [];
+        user_socials_list.forEach((social) => {
+          if (updatedField[social]) queryList.push(updatedField[social]);
+          else queryList.push(null);
+        });
+        await pingPool.query(
+          "INSERT INTO USER_SOCIALS (user_id,user_linkedin,user_github,user_instagram,user_twitter,user_reddit,user_facebook,user_random_social) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
+          [userId, ...queryList]
+        );
+      }
+    }
+    return res.status(200).json({ message: "user details updated" });
+  } catch (error) {
+    console.log("ERROR", error);
+  }
+};
+
 export const userAuth = async (req, res) => {
   const userId = req.userId;
   try {
@@ -149,6 +258,6 @@ export const userAuth = async (req, res) => {
       userDetails: { ...userDetails.rows[0], ...userSocials.rows[0] },
     });
   } catch (error) {
-    console.log(error);
+    console.log("ERROR", error);
   }
 };

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  editUser,
   loginUser,
   registerUser,
   userAuth,
@@ -13,5 +14,6 @@ authRouter.route("/auth-google").post(validateGoogleAuth);
 authRouter.route("/register").post(registerUser);
 authRouter.route("/login").post(loginUser);
 authRouter.route("/user-auth").get(authMiddleware, userAuth);
+authRouter.route("/edit-user").patch(authMiddleware, editUser);
 
 export default authRouter;

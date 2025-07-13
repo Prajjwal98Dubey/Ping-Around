@@ -12,9 +12,12 @@ import {
   FaFacebook,
   FaInstagram,
   FaReddit,
+  FaRegEdit,
+  FaUserEdit,
 } from "react-icons/fa";
 import { UserContext } from "../context/all.context.js";
 import { profileReducer } from "../helpers/reducers/profile.reducer.js";
+import { Link } from "react-router-dom";
 
 const USER_SOCIALS = [
   {
@@ -54,7 +57,6 @@ const USER_SOCIALS = [
   },
 ];
 
-
 const MyProfile = () => {
   const { userDetails } = use(UserContext);
 
@@ -89,7 +91,17 @@ const MyProfile = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-[#18181b] via-[#232526] to-[#0f2027] px-2 py-8 font-[Quicksand]">
-      <div className="w-full max-w-3xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-12 flex flex-col items-center">
+      <div className=" relative w-full max-w-3xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-12 flex flex-col items-center">
+        <div className="absolute right-4 top-2">
+          <Link to="/edit-profile">
+            <button
+              type="button"
+              className="p-2 rounded-full border border-dashed"
+            >
+              <FaUserEdit className="text-white font-bold text-xl " />
+            </button>
+          </Link>
+        </div>
         <div className="relative flex flex-col items-center">
           <img
             src={

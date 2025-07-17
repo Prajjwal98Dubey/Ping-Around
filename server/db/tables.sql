@@ -38,3 +38,11 @@ CREATE TABLE check_socials(
  social_link varchar(150),
  primary key (user_id,social_link)
 )
+
+--- USERS LOCATION ---
+CREATE TABLE LOCATION_DETAILS(
+user_id varchar(255) references users(user_id),
+longitude DOUBLE PRECISION,
+latitude DOUBLE PRECISION,
+is_online boolean
+)

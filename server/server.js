@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRouter from "./routes/auth.route.js";
+import locationRouter from "./routes/location.route.js";
 
 const app = express();
 app.use(
@@ -16,6 +17,9 @@ dotenv.config();
 
 // AUTH
 app.use("/api/v1/auth", authRouter);
+
+// LOCATION
+app.use("/api/v1/location", locationRouter);
 
 app.listen(5000, () =>
   console.log(`server listening at ${process.env.PORT || 5000}`)

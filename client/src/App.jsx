@@ -35,9 +35,10 @@ const appRouter = createBrowserRouter([
         element: <MyProfile />,
       },
       {
-        path: "/edit-profile",
+        path: "edit-profile",
         element: <EditProfile />,
       },
+      
     ],
   },
   {

@@ -1,4 +1,5 @@
 import pingPool from "../db/configDB.js";
+import { haverSineDistance } from "../helpers/location.helpers.js";
 export const userLocationDetails = async (req, res) => {
   const { userId, longitude, latitude } = req.body;
   try {
@@ -23,3 +24,27 @@ export const userLocationDetails = async (req, res) => {
   }
 };
 
+export const getCloseByUsers = async (req, res) => {
+  const { lat, long } = req.query;
+  try {
+    let obj = { 1: [], 3: [], 5: [], 10: [], 11: [] };
+    let userDetails = await pingPool.query(
+      "SELECT U1.USER_ID,U1.FIRST_NAME,U1.USER_EMAIL,U1.USER_IMAGE,U1.PROFESSION,U2.LATITUDE,U2.LONGITUDE FROM USERS U1 INNER JOIN LOCATION_DETAILS U2 ON U1.USER_ID = U2.USER_ID"
+    );
+    for (let user of userDetails.rows) {
+      let distance = haverSineDistance(
+        { lat1: lat, lon1: long },
+        { lat2: user["latitude"], lon2: user["longitude"] }
+      );
+      distance = Math.ceil(distance);
+      if (0 <= distance && distance <= 1) obj[1].push(user);
+      else if (1 < distance && distance <= 3) obj[3].push(user);
+      else if (3 < distance && distance <= 5) obj[5].push(user);
+      else if (5 < distance && distance <= 10) obj[10].push(user);
+      else if (distance > 10) obj[11].push(user);
+    }
+    return res.status(201).json({ locationDetails: obj });
+  } catch (error) {
+    console.log(error);
+  }
+};

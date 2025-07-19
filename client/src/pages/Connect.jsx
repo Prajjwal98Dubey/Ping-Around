@@ -1,9 +1,11 @@
-import { use } from "react";
-import { FaLocationArrow } from "react-icons/fa";
+import { use, useState } from "react";
+import { FaLocationArrow, FaUserCircle } from "react-icons/fa";
 import { UserContext } from "../context/all.context.js";
-import { MY_LOCATION_DETAILS } from "../apis/auth.api.js";
+import { GET_NEARBY_USERS, MY_LOCATION_DETAILS } from "../apis/auth.api.js";
 const Connect = () => {
   const { userDetails, setUserDetails } = use(UserContext);
+  const [isLocationShared, setIsLocationShared] = useState(false);
+  const [locationDetails, setLocationDetails] = useState({});
   const handleUserlocation = async () => {
     navigator.geolocation.getCurrentPosition(async (pos) => {
       await fetch(MY_LOCATION_DETAILS, {
@@ -17,6 +19,13 @@ const Connect = () => {
           longitude: pos.coords.longitude,
         }),
       });
+      let res = await fetch(
+        GET_NEARBY_USERS +
+          `?lat=${pos.coords.latitude}&long=${pos.coords.longitude}`
+      );
+      res = await res.json();
+      setLocationDetails({ ...res.locationDetails });
+      setIsLocationShared(true);
       setUserDetails({
         ...userDetails,
         latitude: pos.coords.latitude,
@@ -39,9 +48,47 @@ const Connect = () => {
           {userDetails["latitude"] ? "location on " : "share your location"}
         </button>
       </div>
-      <div className="flex justify-center items-center text-xl md:text-4xl font-extrabold text-white">
-        Connecting ...
-      </div>
+      {!isLocationShared && (
+        <div className="flex justify-center items-center text-lg md:text-3xl font-extrabold text-gray-500 py-2">
+          Share Location to find nearest users...
+        </div>
+      )}
+      {isLocationShared && (
+        <div className="flex justify-center w-full h-full mx-2 md:mx-6">
+          <div className="w-full h-full">
+            {Object.keys(locationDetails).map((dis) => (
+              <div key={dis} className="p-8">
+                <div className="relative w-[95%] h-[5px] bg-gray-500 my-2 flex justify-center rounded-l-[130px] rounded-r-[30px]">
+                  <div className="absolute right-0 top-1 text-white font-bold">
+                    <div className="p-2 rounded-[25px] text-[12px] md:text-lg ">
+                      {dis == 11 ? "Far Away" : `Within ${dis} km`}
+                    </div>
+                  </div>
+                  <div className="absolute left-0 transform -translate-y-1/2 top-1/2 flex">
+                    {locationDetails[dis].map((user) => (
+                      <div className="flex px-1" key={user.user_id}>
+                        <div className="rounded-full px-1 mx-1">
+                          {user.user_image ? (
+                            <img
+                              src={user.user_image}
+                              alt="user_image"
+                              className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] rounded-full"
+                            />
+                          ) : (
+                            <div className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] rounded-full bg-[#313131] flex justify-center items-center text-white font-extrabold">
+                              {user.first_name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

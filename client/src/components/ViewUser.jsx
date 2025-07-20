@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import {
   FaFacebook,
   FaGithub,
@@ -7,7 +9,7 @@ import {
   FaReddit,
   FaTwitter,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import DetailViewUser from "./DetailViewUser";
 
 const SOCIALS_LIST = [
   "user_instagram",
@@ -63,7 +65,8 @@ const USER_SOCIALS = [
   },
 ];
 
-const ViewUser = ({ details }) => {
+const ViewUser = ({ details, handleMouseLeave }) => {
+  const [openDetailView, setOpenDetailView] = useState(false);
   return (
     <div className="w-[260px] md:w-[320px] rounded-2xl bg-[#313131] text-white z-10 shadow-xl shadow-[#0ea5e9]/20 font-[Quicksand] border border-[#0ea5e9]/20 p-4 relative overflow-hidden">
       {/* Decorative Glow */}
@@ -117,11 +120,26 @@ const ViewUser = ({ details }) => {
           </div>
         )}
         <button
+          onClick={() => setOpenDetailView(true)}
           type="button"
           className="bg-gradient-to-r from-[#3b0764] via-[#0ea5e9] to-[#f59e42] px-4 py-2 font-bold rounded-full shadow-lg hover:scale-105 hover:from-[#0ea5e9] hover:to-[#3b0764] transition-all duration-300 text-xs md:text-base"
         >
           More Details
         </button>
+        {openDetailView &&
+          createPortal(
+            <>
+              <div
+                onClick={() => {
+                  setOpenDetailView(false);
+                  handleMouseLeave(details.user_id);
+                }}
+                className="fixed top-0 w-full min-h-screen bg-gray-400/40 flex justify-center items-center"
+              ></div>
+              <DetailViewUser userId={details.user_id} />
+            </>,
+            document.getElementById("modal")
+          )}
       </div>
     </div>
   );

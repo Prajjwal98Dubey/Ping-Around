@@ -261,3 +261,18 @@ export const userAuth = async (req, res) => {
     console.log("ERROR", error);
   }
 };
+
+export const getUserDetails = async (req, res) => {
+  const userId = req.query.userId;
+  try {
+    let details = await pingPool.query(
+      "SELECT U1.USER_ID,U1.FIRST_NAME,U1.USER_EMAIL,U1.GENDER,U1.BIO,U1.PHONE,U1.USER_IMAGE,U1.CITY,U1.COUNTRY,U1.COUNTRY_CODE,U1.PROFESSION,U2.USER_INSTAGRAM,U2.USER_TWITTER,U2.USER_LINKEDIN,U2.USER_GITHUB,U2.USER_REDDIT,U2.USER_FACEBOOK,U2.USER_RANDOM_SOCIAL FROM USERS U1 INNER JOIN USER_SOCIALS U2 ON U1.USER_ID = U2.USER_ID WHERE U1.USER_ID = $1",
+      [userId]
+    );
+    if (!details.rowCount)
+      return res.status(400).json({ message: "user does not exists." });
+    return res.status(200).json({ ...details.rows[0] });
+  } catch (error) {
+    console.log(error);
+  }
+};

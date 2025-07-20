@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   editUser,
+  getUserDetails,
   loginUser,
   registerUser,
   userAuth,
@@ -15,5 +16,6 @@ authRouter.route("/register").post(registerUser);
 authRouter.route("/login").post(loginUser);
 authRouter.route("/user-auth").get(authMiddleware, userAuth);
 authRouter.route("/edit-user").patch(authMiddleware, editUser);
+authRouter.route("/get-user-details").get(getUserDetails);
 
 export default authRouter;

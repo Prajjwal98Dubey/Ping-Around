@@ -1,62 +1,68 @@
 import { use, useState } from "react";
-import { FaLocationArrow, FaUserCircle } from "react-icons/fa";
-import { UserContext } from "../context/all.context.js";
+import { FaLocationArrow } from "react-icons/fa";
+import {
+  LocationContext,
+  NearUserContext,
+  UserContext,
+} from "../context/all.context.js";
 import { GET_NEARBY_USERS, MY_LOCATION_DETAILS } from "../apis/auth.api.js";
 import ViewUser from "../components/ViewUser.jsx";
 import { createPortal } from "react-dom";
 const Connect = () => {
   const { userDetails, setUserDetails } = use(UserContext);
-  const [isLocationShared, setIsLocationShared] = useState(false);
-  const [locationDetails, setLocationDetails] = useState({});
+  const { locationShared, setLocationShared } = use(LocationContext);
+  const { nearUsersDetails, setNearUsersDetails } = use(NearUserContext);
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
   const handleUserlocation = async () => {
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      await fetch(MY_LOCATION_DETAILS, {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: userDetails.user_id,
+    if (!locationShared) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        await fetch(MY_LOCATION_DETAILS, {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userDetails.user_id,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          }),
+        });
+        let res = await fetch(
+          GET_NEARBY_USERS +
+            `?lat=${pos.coords.latitude}&long=${pos.coords.longitude}`
+        );
+        res = await res.json();
+        setNearUsersDetails({ ...res.locationDetails });
+        setLocationShared(true);
+        setUserDetails({
+          ...userDetails,
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
-        }),
+        });
       });
-      let res = await fetch(
-        GET_NEARBY_USERS +
-          `?lat=${pos.coords.latitude}&long=${pos.coords.longitude}`
-      );
-      res = await res.json();
-      setLocationDetails({ ...res.locationDetails });
-      setIsLocationShared(true);
-      setUserDetails({
-        ...userDetails,
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-      });
-    });
+    }
   };
-  const handleMouseOver = (e, user) => {
-    for (let key of Object.keys(locationDetails)) {
-      for (let u of locationDetails[key]) {
-        if (u.user_id === user.user_id) {
+  const handleMouseOver = (e, userId) => {
+    for (let key of Object.keys(nearUsersDetails)) {
+      for (let u of nearUsersDetails[key]) {
+        if (u.user_id === userId) {
           u.isShow = true;
         }
       }
     }
     const position = e.currentTarget.getBoundingClientRect();
     setHoverPos({ x: position.left, y: position.top });
-    setLocationDetails({ ...locationDetails });
+    setNearUsersDetails({ ...nearUsersDetails });
   };
-  const handleMouseLeave = (user) => {
-    for (let key of Object.keys(locationDetails)) {
-      for (let u of locationDetails[key]) {
-        if (u.user_id === user.user_id) {
+  const handleMouseLeave = (userId) => {
+    for (let key of Object.keys(nearUsersDetails)) {
+      for (let u of nearUsersDetails[key]) {
+        if (u.user_id === userId) {
           u.isShow = false;
         }
       }
     }
-    setLocationDetails({ ...locationDetails });
+    setNearUsersDetails({ ...nearUsersDetails });
     setHoverPos({ x: 0, y: 0 });
   };
   return (
@@ -74,15 +80,16 @@ const Connect = () => {
           {userDetails["latitude"] ? "location on " : "share your location"}
         </button>
       </div>
-      {!isLocationShared && (
+      {console.log("LOCATION ON", locationShared)}
+      {!locationShared && (
         <div className="flex justify-center items-center text-lg md:text-3xl font-extrabold text-gray-500 py-2">
           Share Location to find nearest users...
         </div>
       )}
-      {isLocationShared && (
+      {locationShared && (
         <div className="flex justify-center w-full h-full mx-2 md:mx-6">
           <div className="w-full h-full">
-            {Object.keys(locationDetails).map((dis) => (
+            {Object.keys(nearUsersDetails).map((dis) => (
               <div key={dis} className="p-8">
                 <div className="relative w-[95%] h-[5px] bg-gray-500 my-2 flex justify-center rounded-l-[130px] rounded-r-[30px]">
                   <div className="absolute right-0 top-1 text-white font-bold">
@@ -91,12 +98,12 @@ const Connect = () => {
                     </div>
                   </div>
                   <div className="absolute left-0 transform -translate-y-1/2 top-1/2 flex">
-                    {locationDetails[dis].map((user) => (
+                    {nearUsersDetails[dis].map((user) => (
                       <div
                         className="flex px-1 cursor-pointer relative"
                         key={user.user_id}
-                        onMouseEnter={(e) => handleMouseOver(e, user)}
-                        onMouseLeave={() => handleMouseLeave(user)}
+                        onMouseEnter={(e) => handleMouseOver(e, user.user_id)}
+                        onMouseLeave={() => handleMouseLeave(user.user_id)}
                       >
                         <div className="rounded-full px-1 mx-1">
                           {user.user_image ? (
@@ -121,7 +128,10 @@ const Connect = () => {
                               }}
                               className="transition-all duration-300"
                             >
-                              <ViewUser details={user} />
+                              <ViewUser
+                                details={user}
+                                handleMouseLeave={handleMouseLeave}
+                              />
                             </div>,
                             document.getElementById("modal")
                           )}

@@ -29,7 +29,7 @@ export const getCloseByUsers = async (req, res) => {
   try {
     let obj = { 1: [], 3: [], 5: [], 10: [], 11: [] };
     let userDetails = await pingPool.query(
-      "SELECT U1.USER_ID,U1.FIRST_NAME,U1.USER_EMAIL,U1.USER_IMAGE,U1.PROFESSION,U2.LATITUDE,U2.LONGITUDE FROM USERS U1 INNER JOIN LOCATION_DETAILS U2 ON U1.USER_ID = U2.USER_ID"
+      "SELECT U1.USER_ID,U1.FIRST_NAME,U1.USER_EMAIL,U1.USER_IMAGE,U1.PROFESSION,U2.LATITUDE,U2.LONGITUDE,U3.USER_INSTAGRAM,U3.USER_TWITTER,U3.USER_LINKEDIN,U3.USER_GITHUB,U3.USER_REDDIT,U3.USER_FACEBOOK,U3.USER_RANDOM_SOCIAL FROM USERS U1 INNER JOIN LOCATION_DETAILS U2 ON U1.USER_ID = U2.USER_ID INNER JOIN USER_SOCIALS U3 ON U2.USER_ID = U3.USER_ID"
     );
     for (let user of userDetails.rows) {
       let distance = haverSineDistance(
@@ -37,11 +37,15 @@ export const getCloseByUsers = async (req, res) => {
         { lat2: user["latitude"], lon2: user["longitude"] }
       );
       distance = Math.ceil(distance);
-      if (0 <= distance && distance <= 1) obj[1].push(user);
-      else if (1 < distance && distance <= 3) obj[3].push(user);
-      else if (3 < distance && distance <= 5) obj[5].push(user);
-      else if (5 < distance && distance <= 10) obj[10].push(user);
-      else if (distance > 10) obj[11].push(user);
+      if (0 <= distance && distance <= 1)
+        obj[1].push({ ...user, isShow: false });
+      else if (1 < distance && distance <= 3)
+        obj[3].push({ ...user, isShow: false });
+      else if (3 < distance && distance <= 5)
+        obj[5].push({ ...user, isShow: false });
+      else if (5 < distance && distance <= 10)
+        obj[10].push({ ...user, isShow: false });
+      else if (distance > 10) obj[11].push({ ...user, isShow: false });
     }
     return res.status(201).json({ locationDetails: obj });
   } catch (error) {

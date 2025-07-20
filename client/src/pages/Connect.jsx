@@ -2,10 +2,13 @@ import { use, useState } from "react";
 import { FaLocationArrow, FaUserCircle } from "react-icons/fa";
 import { UserContext } from "../context/all.context.js";
 import { GET_NEARBY_USERS, MY_LOCATION_DETAILS } from "../apis/auth.api.js";
+import ViewUser from "../components/ViewUser.jsx";
+import { createPortal } from "react-dom";
 const Connect = () => {
   const { userDetails, setUserDetails } = use(UserContext);
   const [isLocationShared, setIsLocationShared] = useState(false);
   const [locationDetails, setLocationDetails] = useState({});
+  const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
   const handleUserlocation = async () => {
     navigator.geolocation.getCurrentPosition(async (pos) => {
       await fetch(MY_LOCATION_DETAILS, {
@@ -32,6 +35,29 @@ const Connect = () => {
         longitude: pos.coords.longitude,
       });
     });
+  };
+  const handleMouseOver = (e, user) => {
+    for (let key of Object.keys(locationDetails)) {
+      for (let u of locationDetails[key]) {
+        if (u.user_id === user.user_id) {
+          u.isShow = true;
+        }
+      }
+    }
+    const position = e.currentTarget.getBoundingClientRect();
+    setHoverPos({ x: position.left, y: position.top });
+    setLocationDetails({ ...locationDetails });
+  };
+  const handleMouseLeave = (user) => {
+    for (let key of Object.keys(locationDetails)) {
+      for (let u of locationDetails[key]) {
+        if (u.user_id === user.user_id) {
+          u.isShow = false;
+        }
+      }
+    }
+    setLocationDetails({ ...locationDetails });
+    setHoverPos({ x: 0, y: 0 });
   };
   return (
     <div className="w-full min-h-screen">
@@ -66,7 +92,12 @@ const Connect = () => {
                   </div>
                   <div className="absolute left-0 transform -translate-y-1/2 top-1/2 flex">
                     {locationDetails[dis].map((user) => (
-                      <div className="flex px-1" key={user.user_id}>
+                      <div
+                        className="flex px-1 cursor-pointer relative"
+                        key={user.user_id}
+                        onMouseEnter={(e) => handleMouseOver(e, user)}
+                        onMouseLeave={() => handleMouseLeave(user)}
+                      >
                         <div className="rounded-full px-1 mx-1">
                           {user.user_image ? (
                             <img
@@ -80,6 +111,20 @@ const Connect = () => {
                             </div>
                           )}
                         </div>
+                        {user.isShow &&
+                          createPortal(
+                            <div
+                              style={{
+                                position: "fixed",
+                                top: hoverPos["y"],
+                                left: hoverPos["x"],
+                              }}
+                              className="transition-all duration-300"
+                            >
+                              <ViewUser details={user} />
+                            </div>,
+                            document.getElementById("modal")
+                          )}
                       </div>
                     ))}
                   </div>

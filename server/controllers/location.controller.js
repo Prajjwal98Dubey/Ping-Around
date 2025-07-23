@@ -37,15 +37,11 @@ export const getCloseByUsers = async (req, res) => {
         { lat2: user["latitude"], lon2: user["longitude"] }
       );
       distance = Math.ceil(distance);
-      if (0 <= distance && distance <= 1)
-        obj[1].push({ ...user, isShow: false });
-      else if (1 < distance && distance <= 3)
-        obj[3].push({ ...user, isShow: false });
-      else if (3 < distance && distance <= 5)
-        obj[5].push({ ...user, isShow: false });
-      else if (5 < distance && distance <= 10)
-        obj[10].push({ ...user, isShow: false });
-      else if (distance > 10) obj[11].push({ ...user, isShow: false });
+      if (0 <= distance && distance <= 1) obj[1].push({ ...user });
+      else if (1 < distance && distance <= 3) obj[3].push({ ...user });
+      else if (3 < distance && distance <= 5) obj[5].push({ ...user });
+      else if (5 < distance && distance <= 10) obj[10].push({ ...user });
+      else if (distance > 10) obj[11].push({ ...user });
     }
     return res.status(201).json({ locationDetails: obj });
   } catch (error) {

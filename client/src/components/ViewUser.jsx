@@ -9,7 +9,7 @@ import {
   FaReddit,
   FaTwitter,
 } from "react-icons/fa";
-import DetailViewUser from "./DetailViewUser";
+import DetailViewUser from "./DetailViewUser.jsx";
 
 const SOCIALS_LIST = [
   "user_instagram",

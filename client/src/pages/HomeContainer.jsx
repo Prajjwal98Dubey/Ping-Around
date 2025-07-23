@@ -12,7 +12,7 @@ const HomeContainer = () => {
       </p>
       <div className="md:flex p-1">
         <div className="flex justify-center">
-          <Link to="connect">
+          <Link to="neighbourhood">
             <button className="flex items-center gap-3 bg-gradient-to-r from-[#3b0764] via-[#0ea5e9] to-[#f59e42] text-white font-bold px-8 py-4 rounded-full shadow-xl hover:scale-105 hover:from-[#0ea5e9] hover:to-[#3b0764] transition-all duration-300 active:scale-95 font-[Quicksand] text-sm md:text-lg uppercase tracking-wider mx-2 my-1">
               <FaUsers className="text-white text-xl" />
               See Others

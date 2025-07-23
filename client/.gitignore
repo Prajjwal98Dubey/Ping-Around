@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 .env
+/src/pages/Connect.jsx
 dist
 dist-ssr
 *.local

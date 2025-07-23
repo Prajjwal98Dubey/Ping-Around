@@ -1,4 +1,10 @@
-import { use, useState } from "react";
+/*
+---------------------------------------------------------------------- THIS PAGE IS NOT IN USE ------------------------------------------------------------
+
+------------------------------------------------ THIS FUNCTIONALITY IS HANDLED BY THE "/neighbourhood"(Neighbourhood.jsx) -------------------------- 
+
+
+import { use, useEffect, useRef } from "react";
 import { FaLocationArrow } from "react-icons/fa";
 import {
   LocationContext,
@@ -10,9 +16,34 @@ import ViewUser from "../components/ViewUser.jsx";
 import { createPortal } from "react-dom";
 const Connect = () => {
   const { userDetails, setUserDetails } = use(UserContext);
-  const { locationShared, setLocationShared } = use(LocationContext);
+  const { locationShared, setLocationShared } = use(LocationContext); 
   const { nearUsersDetails, setNearUsersDetails } = use(NearUserContext);
-  const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
+  const hoverPosRef = useRef({ x: 0, y: 0 });
+  const currentHoveredUserRef = useRef(null);
+  const timerRef = useRef(null);
+  const intervalRef = useRef(null);
+  useEffect(() => {
+    const updateNearUsers = async () => {
+      let res = await fetch(
+        GET_NEARBY_USERS +
+          `?lat=${userDetails.latitude}&long=${userDetails.longitude}`
+      );
+      res = await res.json();
+      console.log("HOVERING POSITION", hoverPosRef.current["x"]);
+      if (hoverPosRef.current["x"] != 0) {
+        handleMouseOver(null, currentHoveredUserRef.current);
+      }
+      setNearUsersDetails({ ...res.locationDetails });
+    };
+
+    if (locationShared && userDetails["latitude"]) {
+      intervalRef.current = setInterval(() => {
+        updateNearUsers();
+      }, 5000);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [  ]);
+
   const handleUserlocation = async () => {
     if (!locationShared) {
       navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -50,9 +81,16 @@ const Connect = () => {
         }
       }
     }
-    const position = e.currentTarget.getBoundingClientRect();
-    setHoverPos({ x: position.left, y: position.top });
-    setNearUsersDetails({ ...nearUsersDetails });
+    const position = e
+      ? e.currentTarget.getBoundingClientRect()
+      : { left: hoverPosRef.current["x"], top: hoverPosRef.current["y"] };
+    // setCurrentHoveredUserR(userId);
+    currentHoveredUserRef.current = userId;
+    timerRef.current = setTimeout(() => {
+      // setHoverPos({ x: position.left, y: position.top });
+      hoverPosRef.current = { x: position.left, y: position.top };
+      setNearUsersDetails({ ...nearUsersDetails });
+    }, 150);
   };
   const handleMouseLeave = (userId) => {
     for (let key of Object.keys(nearUsersDetails)) {
@@ -63,7 +101,12 @@ const Connect = () => {
       }
     }
     setNearUsersDetails({ ...nearUsersDetails });
-    setHoverPos({ x: 0, y: 0 });
+    // setHoverPos({ x: 0, y: 0 });
+    hoverPosRef.current = { x: 0, y: 0 };
+    // setCurrentHoveredUser("");
+    currentHoveredUserRef.current = null;
+    clearTimeout(timerRef.current);
+    timerRef.current = null;
   };
   return (
     <div className="w-full min-h-screen">
@@ -80,12 +123,14 @@ const Connect = () => {
           {userDetails["latitude"] ? "location on " : "share your location"}
         </button>
       </div>
-      {console.log("LOCATION ON", locationShared)}
       {!locationShared && (
         <div className="flex justify-center items-center text-lg md:text-3xl font-extrabold text-gray-500 py-2">
           Share Location to find nearest users...
         </div>
       )}
+      
+
+
       {locationShared && (
         <div className="flex justify-center w-full h-full mx-2 md:mx-6">
           <div className="w-full h-full">
@@ -99,6 +144,8 @@ const Connect = () => {
                   </div>
                   <div className="absolute left-0 transform -translate-y-1/2 top-1/2 flex">
                     {nearUsersDetails[dis].map((user) => (
+
+                       // NearUserComp.jsx
                       <div
                         className="flex px-1 cursor-pointer relative"
                         key={user.user_id}
@@ -123,8 +170,8 @@ const Connect = () => {
                             <div
                               style={{
                                 position: "fixed",
-                                top: hoverPos["y"],
-                                left: hoverPos["x"],
+                                top: hoverPosRef.current["y"],
+                                left: hoverPosRef.current["x"],
                               }}
                               className="transition-all duration-300"
                             >
@@ -136,6 +183,8 @@ const Connect = () => {
                             document.getElementById("modal")
                           )}
                       </div>
+
+
                     ))}
                   </div>
                 </div>
@@ -149,3 +198,5 @@ const Connect = () => {
 };
 
 export default Connect;
+
+*/

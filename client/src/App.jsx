@@ -2,10 +2,10 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import HomeContainer from "./pages/HomeContainer";
-import Connect from "./pages/Connect";
 import SignUp from "./pages/SignUp";
 import MyProfile from "./pages/MyProfile";
 import EditProfile from "./pages/EditProfile";
+import NeighbourHood from "./pages/NeighbourHood";
 
 function App() {
   return (
@@ -27,8 +27,8 @@ const appRouter = createBrowserRouter([
         element: <HomeContainer />,
       },
       {
-        path: "connect",
-        element: <Connect />,
+        path: "neighbourhood",
+        element: <NeighbourHood />,
       },
       {
         path: "me",
@@ -38,7 +38,6 @@ const appRouter = createBrowserRouter([
         path: "edit-profile",
         element: <EditProfile />,
       },
-      
     ],
   },
   {

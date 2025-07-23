@@ -13,11 +13,9 @@ const NeighbourHood = () => {
   const { userDetails, setUserDetails } = use(UserContext);
   const { locationShared, setLocationShared } = use(LocationContext);
   const { nearUsersDetails, setNearUsersDetails } = use(NearUserContext);
+  const [isLoading, setIsLoading] = useState(false);
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
-
-  const currentHoveredUserRef = useRef(null);
   const intervalRef = useRef(null);
-
   useEffect(() => {
     const updateNearUsers = async () => {
       let res = await fetch(
@@ -46,13 +44,14 @@ const NeighbourHood = () => {
     if (locationShared && userDetails["latitude"]) {
       intervalRef.current = setInterval(() => {
         updateNearUsers();
-      }, 5000);
+      }, 10000);
     }
     return () => clearInterval(intervalRef.current);
   }, [userDetails, locationShared]);
 
   const handleUserlocation = async () => {
     if (!locationShared) {
+      setIsLoading(true);
       navigator.geolocation.getCurrentPosition(async (pos) => {
         await fetch(MY_LOCATION_DETAILS, {
           method: "POST",
@@ -86,6 +85,7 @@ const NeighbourHood = () => {
           longitude: pos.coords.longitude,
         });
       });
+      setIsLoading(false);
     }
   };
 
@@ -106,7 +106,6 @@ const NeighbourHood = () => {
       const position = e
         ? e.currentTarget.getBoundingClientRect()
         : { left: hoverPos["x"], top: hoverPos["y"] };
-      currentHoveredUserRef.current = userId;
       setHoverPos({ x: position.left, y: position.top });
       setNearUsersDetails({ ...newNearUserDetails });
     },
@@ -129,10 +128,15 @@ const NeighbourHood = () => {
       }
       setNearUsersDetails({ ...newNearUserDetails });
       setHoverPos({ x: 0, y: 0 });
-      currentHoveredUserRef.current = null;
     },
     [nearUsersDetails, setNearUsersDetails]
   );
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center py-10 font-bold text-white">
+        Loading ....
+      </div>
+    );
   return (
     <div className="w-full min-h-screen">
       <div className="mt-14 flex justify-center items-center p-1">

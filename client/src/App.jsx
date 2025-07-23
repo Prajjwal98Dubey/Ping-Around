@@ -6,6 +6,7 @@ import SignUp from "./pages/SignUp";
 import MyProfile from "./pages/MyProfile";
 import EditProfile from "./pages/EditProfile";
 import NeighbourHood from "./pages/NeighbourHood";
+import Error from "./pages/Error";
 
 function App() {
   return (
@@ -47,5 +48,9 @@ const appRouter = createBrowserRouter([
   {
     path: "/signup",
     element: <SignUp />,
+  },
+  {
+    path: "*",
+    element: <Error />,
   },
 ]);

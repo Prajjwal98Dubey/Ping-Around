@@ -82,7 +82,6 @@ const DetailViewUser = ({ userId }) => {
           alt="Profile"
           className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg bg-white/20 mb-4"
         />
-        {/* Name */}
         {details.first_name && (
           <h2 className="text-2xl md:text-3xl font-extrabold text-[#f59e42] mb-1 text-center">
             {details.first_name}

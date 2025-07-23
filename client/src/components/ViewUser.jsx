@@ -69,7 +69,6 @@ const ViewUser = ({ details, handleMouseLeave }) => {
   const [openDetailView, setOpenDetailView] = useState(false);
   return (
     <div className="w-[260px] md:w-[320px] rounded-2xl bg-[#313131] text-white z-10 shadow-xl shadow-[#0ea5e9]/20 font-[Quicksand] border border-[#0ea5e9]/20 p-4 relative overflow-hidden">
-      {/* Decorative Glow */}
       <div className="absolute -top-8 -left-8 w-24 h-24 bg-[#0ea5e9]/20 rounded-full blur-2xl pointer-events-none"></div>
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0">

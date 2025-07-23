@@ -1,9 +1,11 @@
 import { createPortal } from "react-dom";
 import ViewUser from "./ViewUser.jsx";
-import { memo } from "react";
+import { memo, useState } from "react";
+import { randomColorGenerator } from "../helpers/user.helper.js";
 
 const NearUserComp = memo(
   ({ user, handleMouseOver, handleMouseLeave, hoverPos }) => {
+    const [hasImageError, setHasImageError] = useState(false);
     return (
       <div
         className="flex px-1 cursor-pointer relative"
@@ -12,11 +14,21 @@ const NearUserComp = memo(
       >
         <div className="rounded-full px-1 mx-1">
           {user.user_image ? (
-            <img
-              src={user.user_image}
-              alt="user_image"
-              className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] rounded-full"
-            />
+            hasImageError ? (
+              <div
+                style={{ backgroundColor: randomColorGenerator() }}
+                className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] rounded-full flex justify-center items-center text-white font-extrabold"
+              >
+                {user.first_name.charAt(0).toUpperCase()}
+              </div>
+            ) : (
+              <img
+                src={user.user_image}
+                alt="user_image"
+                className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] rounded-full"
+                onError={() => setHasImageError(true)}
+              />
+            )
           ) : (
             <div className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] rounded-full bg-[#313131] flex justify-center items-center text-white font-extrabold">
               {user.first_name.charAt(0).toUpperCase()}

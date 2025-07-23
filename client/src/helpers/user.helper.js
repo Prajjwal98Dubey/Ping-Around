@@ -30,3 +30,11 @@ export const compareNearUserDetails = (obj1, obj2) => {
   }
   return newNearUsers;
 };
+
+export const randomColorGenerator = () => {
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+
+  return `rgb(${r},${g},${b})`;
+};

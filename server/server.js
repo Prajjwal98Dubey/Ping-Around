@@ -12,8 +12,12 @@ app.use(
   })
 );
 
+const ENV = process.env.NODE_ENV
+
 app.use(express.json());
-dotenv.config();
+dotenv.config({
+  path: ENV == "production" ? ".env.production" : ".env.local",
+});
 
 // AUTH
 app.use("/api/v1/auth", authRouter);
@@ -21,6 +25,6 @@ app.use("/api/v1/auth", authRouter);
 // LOCATION
 app.use("/api/v1/location", locationRouter);
 
-app.listen(5000, () =>
-  console.log(`server listening at ${process.env.PORT || 5000}`)
-);
+app.listen(5000, () => {
+  console.log(`server listening at ${process.env.PORT || 5000}`);
+});

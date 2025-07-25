@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import { use, useState } from "react";
 import {
   FaUser,
   FaBriefcase,
@@ -19,8 +19,12 @@ import {
 } from "react-icons/fa";
 import { IoIosCloseCircle } from "react-icons/io";
 import { UserContext } from "../context/all.context.js";
-import { compareUserDetails } from "../helpers/user.helper.js";
+import {
+  compareUserDetails,
+  randomColorGenerator,
+} from "../helpers/user.helper.js";
 import { EDIT_USER } from "../apis/auth.api.js";
+import toast from "react-hot-toast";
 const USER_SOCIALS = [
   {
     name: "user_instagram",
@@ -67,13 +71,13 @@ const USER_SOCIALS = [
 ];
 
 const EditProfile = () => {
-  // const [profile, setProfile] = useupdateDetails(initialProfile);
   const { userDetails, setUserDetails } = use(UserContext);
   const [updateDetails, setUpdateDetails] = useState({
     ...userDetails,
   });
   const [newSocialLink, setNewSocialLink] = useState("");
   const [newSocial, setNewSocial] = useState({ isOpen: false, name: "" });
+  const [hasImageError, setHasImageError] = useState(false);
 
   const handleChange = (e) => {
     setUpdateDetails({
@@ -122,15 +126,19 @@ const EditProfile = () => {
       credentials: "include",
       body: JSON.stringify(updatedFields),
     });
+    toast.success("Profile Edited ...", {
+      duration: 1500,
+      position: "top-center",
+    });
     setUserDetails({ ...updateDetails });
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-tr from-[#18181b] via-[#232526] to-[#0f2027] px-2 py-8 font-[Quicksand]">
-      <h1 className="text-3xl sm:text-4xl font-extrabold text-[#2563eb] text-center mb-1">
+    <div className="min-h-screen flex flex-col items-center justify-center  px-2 py-8 font-[Quicksand]">
+      <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-[#f59e42] via-[#0ea5e9] to-[#3b0764] bg-clip-text text-transparent text-center mb-1">
         Edit Profile
       </h1>
-      <p className="text-center text-[#0ea5e9] mb-6 text-base sm:text-lg">
+      <p className="text-center text-gray-400 mb-6 text-base sm:text-lg">
         Update your information to keep your profile current
       </p>
       <div
@@ -146,20 +154,35 @@ const EditProfile = () => {
           onSubmit={handleSubmit}
           className="flex-1 flex flex-col gap-6 max-h-[80vh] overflow-y-auto p-4 sm:p-8"
         >
-          <h2 className="text-xl font-bold text-center text-gray-800 mb-2">
+          <h2 className="text-xl font-bold text-center text-gray-400 mb-2">
             Profile Information
           </h2>
           <div className="flex flex-col items-center">
             <label className="relative cursor-pointer group">
-              <img
-                src={
-                  updateDetails.user_image
-                    ? updateDetails.userImage
-                    : "https://randomuser.me/api/portraits/men/32.jpg"
-                }
-                alt="Profile"
-                className="w-24 h-24 rounded-full object-cover border-4 border-[#0ea5e9] shadow-lg"
-              />
+              {updateDetails.user_image ? (
+                hasImageError ? (
+                  <div
+                    style={{ backgroundColor: randomColorGenerator() }}
+                    className="flex justify-center items-center text-xl text-white font-extrabold w-24 h-24 rounded-full object-cover"
+                  >
+                    {updateDetails.first_name.charAt(0).toUpperCase()}
+                  </div>
+                ) : (
+                  <img
+                    src={updateDetails.user_image}
+                    alt="Profile"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-[#0ea5e9] shadow-lg"
+                    onError={() => setHasImageError(true)}
+                  />
+                )
+              ) : (
+                <div
+                  style={{ backgroundColor: randomColorGenerator() }}
+                  className="flex justify-center items-center text-xl text-white font-extrabold w-24 h-24 rounded-full object-cover"
+                >
+                  {updateDetails.first_name.charAt(0).toUpperCase()}
+                </div>
+              )}
               <input
                 type="file"
                 accept="image/*"
@@ -170,11 +193,10 @@ const EditProfile = () => {
                 <FaRegEdit />
               </span>
             </label>
-            <span className="text-xs text-gray-500 mt-2">
+            <span className="text-xs text-gray-400 mt-2">
               Click on the image to change your profile picture
             </span>
           </div>
-          {/* Full Name */}
           <div>
             <label className="flex items-center gap-2 text-[#6366f1] font-semibold mb-1 text-sm">
               <FaUser /> Full Name
@@ -184,11 +206,14 @@ const EditProfile = () => {
               name="first_name"
               value={updateDetails.first_name}
               onChange={handleChange}
-              className="w-full border border-[#0ea5e9] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f59e42] transition text-gray-800"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(14,165,233,0.10) 0%, rgba(59,7,100,0.10) 100%)",
+              }}
+              className="w-full text-white border border-[#0ea5e9] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f59e42] transition "
               placeholder="Full Name"
             />
           </div>
-          {/* Profession */}
           <div>
             <label className="flex items-center gap-2 text-[#0ea5e9] font-semibold mb-1 text-sm">
               <FaBriefcase /> Profession
@@ -198,11 +223,14 @@ const EditProfile = () => {
               name="profession"
               value={updateDetails.profession ? updateDetails.profession : ""}
               onChange={handleChange}
-              className="w-full border border-[#0ea5e9] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f59e42] transition text-gray-800"
+              className="w-full border border-[#0ea5e9] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f59e42] transition text-white"
               placeholder="Profession"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(14,165,233,0.10) 0%, rgba(59,7,100,0.10) 100%)",
+              }}
             />
           </div>
-          {/* Bio */}
           <div>
             <label className="flex items-center gap-2 text-[#22c55e] font-semibold mb-1 text-sm">
               <FaAlignLeft /> Bio
@@ -211,9 +239,13 @@ const EditProfile = () => {
               name="bio"
               value={updateDetails.bio ? updateDetails.bio : ""}
               onChange={handleChange}
-              className="w-full border border-[#0ea5e9] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f59e42] transition text-gray-800"
+              className="w-full border border-[#0ea5e9] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f59e42] transition text-white"
               placeholder="Bio"
               rows={3}
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(14,165,233,0.10) 0%, rgba(59,7,100,0.10) 100%)",
+              }}
             />
           </div>
           {/* Contact Number */}
@@ -226,11 +258,14 @@ const EditProfile = () => {
               name="phone"
               value={updateDetails.phone ? updateDetails.phone : ""}
               onChange={handleChange}
-              className="w-full border border-[#f59e42] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] transition text-gray-800"
+              className="w-full border border-[#0ea5e9] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f59e42] transition text-white "
               placeholder="Contact Number"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(14,165,233,0.10) 0%, rgba(59,7,100,0.10) 100%)",
+              }}
             />
           </div>
-          {/* City & Country */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="flex items-center gap-2 text-[#f43f5e] font-semibold mb-1 text-sm">
@@ -241,8 +276,12 @@ const EditProfile = () => {
                 name="city"
                 value={updateDetails.city ? updateDetails.city : ""}
                 onChange={handleChange}
-                className="w-full border border-[#f43f5e] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] transition text-gray-800"
+                className="w-full border border-[#0ea5e9] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f59e42] transition text-white"
                 placeholder="City"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(14,165,233,0.10) 0%, rgba(59,7,100,0.10) 100%)",
+                }}
               />
             </div>
             <div className="flex-1">
@@ -254,8 +293,12 @@ const EditProfile = () => {
                 name="country"
                 value={updateDetails.country ? updateDetails.country : ""}
                 onChange={handleChange}
-                className="w-full border border-[#6366f1] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] transition text-gray-800"
+                className="w-full border border-[#0ea5e9] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f59e42] transition text-white"
                 placeholder="Country"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(14,165,233,0.10) 0%, rgba(59,7,100,0.10) 100%)",
+                }}
               />
             </div>
           </div>
@@ -307,7 +350,11 @@ const EditProfile = () => {
                     placeholder={`add ${newSocial.name} link`}
                     value={newSocialLink}
                     onChange={(e) => setNewSocialLink(e.target.value)}
-                    className="w-full rounded-md py-1 px-1 font-medium"
+                    className="w-full rounded-md py-1 px-1 font-medium text-white"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(14,165,233,0.10) 0%, rgba(59,7,100,0.10) 100%)",
+                    }}
                   />
                 </div>
                 <div

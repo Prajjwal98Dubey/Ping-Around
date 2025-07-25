@@ -1,4 +1,4 @@
-import React, { use, useReducer } from "react";
+import { use, useReducer, useState } from "react";
 import {
   FaMapMarkerAlt,
   FaTwitter,
@@ -6,18 +6,16 @@ import {
   FaGithub,
   FaGlobe,
   FaEnvelope,
-  FaCalendarAlt,
   FaPhoneAlt,
-  FaPhone,
   FaFacebook,
   FaInstagram,
   FaReddit,
-  FaRegEdit,
   FaUserEdit,
 } from "react-icons/fa";
 import { UserContext } from "../context/all.context.js";
 import { profileReducer } from "../helpers/reducers/profile.reducer.js";
 import { Link } from "react-router-dom";
+import { randomColorGenerator } from "../helpers/user.helper.js";
 
 const USER_SOCIALS = [
   {
@@ -59,7 +57,7 @@ const USER_SOCIALS = [
 
 const MyProfile = () => {
   const { userDetails } = use(UserContext);
-
+  const [hasImageError, setHasImageError] = useState(false);
   const [state, profileDispatch] = useReducer(profileReducer, {
     ...userDetails,
   });
@@ -90,7 +88,7 @@ const MyProfile = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-[#18181b] via-[#232526] to-[#0f2027] px-2 py-8 font-[Quicksand]">
+    <div className="min-h-screen flex items-center justify-center px-2 py-8 font-[Quicksand]">
       <div className=" relative w-full max-w-3xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-12 flex flex-col items-center">
         <div className="absolute right-4 top-2">
           <Link to="/edit-profile">
@@ -103,15 +101,33 @@ const MyProfile = () => {
           </Link>
         </div>
         <div className="relative flex flex-col items-center">
-          <img
-            src={
-              state.user_image
-                ? state.user_image
-                : "https://api.dicebear.com/7.x/miniavs/svg?seed=JordanSmith"
-            }
-            alt="Profile"
-            className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg bg-white/20"
-          />
+          {state.user_image ? (
+            hasImageError ? (
+              <div
+                style={{ backgroundColor: randomColorGenerator() }}
+                className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg flex justify-center items-center text-white font-extrabold text-xl md:text-5xl"
+              >
+                {state.first_name.charAt(0).toUpperCase()}
+              </div>
+            ) : (
+              <img
+                src={
+                  state.user_image
+                    ? state.user_image
+                    : "https://api.dicebear.com/7.x/miniavs/svg?seed=JordanSmith"
+                }
+                alt="Profile"
+                className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg bg-white/20"
+              />
+            )
+          ) : (
+            <div
+              style={{ backgroundColor: randomColorGenerator() }}
+              className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg  flex justify-center items-center text-white font-extrabold text-xl md:text-5xl"
+            >
+              {state.first_name.charAt(0).toUpperCase()}
+            </div>
+          )}
           <span className="absolute bottom-2 right-2 w-5 h-5 bg-green-400 border-2 border-white rounded-full"></span>
         </div>
         <h2 className="mt-4 text-3xl md:text-4xl font-extrabold text-white text-center">
@@ -171,16 +187,6 @@ const MyProfile = () => {
                 {s.icon}
               </a>
             ))}
-        </div>
-        <div className="mt-4 flex flex-col sm:flex-row items-center gap-3 w-full justify-center">
-          <button className="flex items-center gap-2 bg-gradient-to-r from-[#3b0764] via-[#0ea5e9] to-[#f59e42] text-white font-bold px-6 py-2 rounded-full shadow-lg hover:scale-105 transition-all duration-300 active:scale-95 text-base">
-            <FaEnvelope /> Contact Me
-          </button>
-          <input
-            type="text"
-            placeholder="Send a message..."
-            className="flex-1 px-4 py-2 rounded-full bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] transition w-full sm:w-auto"
-          />
         </div>
       </div>
     </div>

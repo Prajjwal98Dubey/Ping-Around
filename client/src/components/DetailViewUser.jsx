@@ -15,6 +15,7 @@ import {
   FaUserCircle,
 } from "react-icons/fa";
 import { GET_USER_DETAILS } from "../apis/auth.api";
+import { randomColorGenerator } from "../helpers/user.helper";
 
 const SOCIALS = [
   {
@@ -59,6 +60,7 @@ const defaultImage = "https://api.dicebear.com/7.x/miniavs/svg?seed=profile";
 const DetailViewUser = ({ userId }) => {
   const [details, setDetails] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [hasImageError, setHasImageError] = useState(false);
   useEffect(() => {
     const getUserDetails = async () => {
       let res = await fetch(GET_USER_DETAILS + `?userId=${userId}`);
@@ -77,11 +79,30 @@ const DetailViewUser = ({ userId }) => {
   return (
     <>
       <div className="fixed font-[Quicksand] transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 z-10 px-2 w-full max-w-xl mx-auto bg-gradient-to-br from-[#18181b] via-[#232526] to-[#3b0764] rounded-2xl shadow-2xl p-6 md:p-10 flex flex-col items-center border border-[#0ea5e9]/20">
-        <img
-          src={details.user_image || defaultImage}
-          alt="Profile"
-          className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg bg-white/20 mb-4"
-        />
+        {details.user_image ? (
+          hasImageError ? (
+            <div
+              style={{ backgroundColor: randomColorGenerator() }}
+              className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg text-xl md:text-2xl text-white font-extrabold mb-4 flex justify-center items-center"
+            >
+              {details.first_name.charAt(0).toUpperCase()}
+            </div>
+          ) : (
+            <img
+              src={details.user_image || defaultImage}
+              alt="Profile"
+              onError={() => setHasImageError(true)}
+              className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg bg-white/20 mb-4"
+            />
+          )
+        ) : (
+          <div
+            style={{ backgroundColor: randomColorGenerator() }}
+            className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg  mb-4 text-xl md:text-2xl text-white font-extrabold flex justify-center items-center"
+          >
+            {details.first_name.charAt(0).toUpperCase()}
+          </div>
+        )}
         {details.first_name && (
           <h2 className="text-2xl md:text-3xl font-extrabold text-[#f59e42] mb-1 text-center">
             {details.first_name}
@@ -146,7 +167,7 @@ const DetailViewUser = ({ userId }) => {
                   className="flex items-center gap-2 bg-white/10 hover:bg-[#0ea5e9]/20 px-4 py-2 rounded-full transition text-sm font-semibold"
                 >
                   {s.icon}
-                  <span className="hidden sm:inline">{s.label}</span>
+                  <span className="hidden sm:inline text-gray-400">{s.label}</span>
                 </a>
               )
           )}

@@ -106,7 +106,7 @@ const NeighbourHood = () => {
       const position = e
         ? e.currentTarget.getBoundingClientRect()
         : { left: hoverPos["x"], top: hoverPos["y"] };
-      setHoverPos({ x: position.left, y: position.top });
+      setHoverPos({ x: position.left, y: position.bottom });
       setNearUsersDetails({ ...newNearUserDetails });
     },
     [hoverPos, nearUsersDetails, setNearUsersDetails]

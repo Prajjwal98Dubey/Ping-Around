@@ -1,17 +1,23 @@
+import "@fontsource/quicksand/700.css";
+import "@fontsource/quicksand/400.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import HomeContainer from "./pages/HomeContainer";
-import SignUp from "./pages/SignUp";
-import MyProfile from "./pages/MyProfile";
-import EditProfile from "./pages/EditProfile";
-import NeighbourHood from "./pages/NeighbourHood";
-import Error from "./pages/Error";
+import { lazy } from "react";
+import { Toaster } from "react-hot-toast";
+
+const Home = lazy(() => import("./pages/Home.jsx"));
+const Login = lazy(() => import("./pages/Login.jsx"));
+const HomeContainer = lazy(() => import("./pages/HomeContainer.jsx"));
+const SignUp = lazy(() => import("./pages/SignUp.jsx"));
+const MyProfile = lazy(() => import("./pages/MyProfile.jsx"));
+const EditProfile = lazy(() => import("./pages/EditProfile.jsx"));
+const NeighbourHood = lazy(() => import("./pages/NeighbourHood.jsx"));
+const Error = lazy(() => import("./pages/Error.jsx"));
 
 function App() {
   return (
     <>
       <RouterProvider router={appRouter} />
+      <Toaster />
     </>
   );
 }

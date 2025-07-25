@@ -10,6 +10,7 @@ import {
   FaTwitter,
 } from "react-icons/fa";
 import DetailViewUser from "./DetailViewUser.jsx";
+import { randomColorGenerator } from "../helpers/user.helper.js";
 
 const SOCIALS_LIST = [
   "user_instagram",
@@ -67,17 +68,28 @@ const USER_SOCIALS = [
 
 const ViewUser = ({ details, handleMouseLeave }) => {
   const [openDetailView, setOpenDetailView] = useState(false);
+  const [hasImageError, setHasImageError] = useState(false);
   return (
     <div className="w-[260px] md:w-[320px] rounded-2xl bg-[#313131] text-white z-10 shadow-xl shadow-[#0ea5e9]/20 font-[Quicksand] border border-[#0ea5e9]/20 p-4 relative overflow-hidden">
       <div className="absolute -top-8 -left-8 w-24 h-24 bg-[#0ea5e9]/20 rounded-full blur-2xl pointer-events-none"></div>
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0">
           {details.user_image ? (
-            <img
-              src={details.user_image}
-              alt="user_image"
-              className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-[#0ea5e9] shadow"
-            />
+            hasImageError ? (
+              <div
+                style={{ backgroundColor: randomColorGenerator() }}
+                className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-[#0ea5e9] shadow flex justify-center items-center font-extrabold text-white"
+              >
+                {details.first_name.charAt(0).toUpperCase()}
+              </div>
+            ) : (
+              <img
+                src={details.user_image}
+                alt="user_image"
+                className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-[#0ea5e9] shadow"
+                onError={() => setHasImageError(true)}
+              />
+            )
           ) : (
             <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#232526] flex justify-center items-center font-bold text-2xl border-2 border-[#0ea5e9] shadow">
               {details.first_name.charAt(0).toUpperCase()}
@@ -135,7 +147,9 @@ const ViewUser = ({ details, handleMouseLeave }) => {
                 }}
                 className="fixed top-0 w-full min-h-screen bg-gray-400/40 flex justify-center items-center"
               ></div>
-              <DetailViewUser userId={details.user_id} />
+              <DetailViewUser
+                userId={details.user_id}
+              />
             </>,
             document.getElementById("modal")
           )}

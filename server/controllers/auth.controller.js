@@ -174,8 +174,7 @@ export const loginUser = async (req, res) => {
           sameSite: process.env.NODE_ENV == "production" ? "none" : "lax",
           secure: process.env.NODE_ENV == "production" ? true : false,
         });
-
-        return res.status(200).json({
+          return res.status(200).json({
           isThirdParyLogin: false,
           userDetails: { ...userDetails.user, ...userSocials.rows[0] },
         });

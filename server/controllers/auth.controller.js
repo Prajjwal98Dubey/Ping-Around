@@ -22,7 +22,10 @@ export const validateGoogleAuth = async (req, res) => {
       );
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
-        sameSite: "lax",
+        domain:
+          process.env.NODE_ENV == "production" ? ".nearchat.fun" : undefined,
+        sameSite: process.env.NODE_ENV == "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV == "production" ? true : false,
       });
       const userSocials = await pingPool.query(
         "SELECT * FROM USER_SOCIALS WHERE USER_ID = $1",
@@ -47,7 +50,10 @@ export const validateGoogleAuth = async (req, res) => {
       );
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
-        sameSite: "lax",
+        domain:
+          process.env.NODE_ENV == "production" ? ".nearchat.fun" : undefined,
+        sameSite: process.env.NODE_ENV == "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV == "production" ? true : false,
       });
       return res.status(200).json({
         message: "google auth success",
@@ -103,7 +109,10 @@ export const registerUser = async (req, res) => {
       );
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
-        sameSite: "lax",
+        domain:
+          process.env.NODE_ENV == "production" ? ".nearchat.fun" : undefined,
+        sameSite: process.env.NODE_ENV == "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV == "production" ? true : false,
       });
       return res.status(201).json({
         message: "user registered",
@@ -160,8 +169,10 @@ export const loginUser = async (req, res) => {
         );
         res.cookie("accessToken", accessToken, {
           httpOnly: true,
-          sameSite: "lax",
-          secure: false,
+          domain:
+            process.env.NODE_ENV == "production" ? ".nearchat.fun" : undefined,
+          sameSite: process.env.NODE_ENV == "production" ? "none" : "lax",
+          secure: process.env.NODE_ENV == "production" ? true : false,
         });
         return res.status(200).json({
           isThirdParyLogin: false,

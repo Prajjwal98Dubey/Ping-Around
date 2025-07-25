@@ -25,6 +25,6 @@ app.use("/api/v1/auth", authRouter);
 // LOCATION
 app.use("/api/v1/location", locationRouter);
 
-app.listen(5000, () => {
+app.listen(5000, () => {	
   console.log(`server listening at ${process.env.PORT || 5000}`);
 });

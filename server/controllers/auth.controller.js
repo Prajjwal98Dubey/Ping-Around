@@ -169,9 +169,12 @@ export const loginUser = async (req, res) => {
         );
         res.cookie("accessToken", accessToken, {
           httpOnly: true,
-          sameSite: "lax",
-          secure: false,
+          domain:
+            process.env.NODE_ENV == "production" ? ".nearchat.fun" : undefined,
+          sameSite: process.env.NODE_ENV == "production" ? "none" : "lax",
+          secure: process.env.NODE_ENV == "production" ? true : false,
         });
+
         return res.status(200).json({
           isThirdParyLogin: false,
           userDetails: { ...userDetails.user, ...userSocials.rows[0] },

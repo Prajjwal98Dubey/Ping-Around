@@ -3,6 +3,7 @@ import {
   editUser,
   getUserDetails,
   loginUser,
+  logoutUser,
   registerUser,
   userAuth,
   validateGoogleAuth,
@@ -17,5 +18,6 @@ authRouter.route("/login").post(loginUser);
 authRouter.route("/user-auth").get(authMiddleware, userAuth);
 authRouter.route("/edit-user").patch(authMiddleware, editUser);
 authRouter.route("/get-user-details").get(getUserDetails);
+authRouter.route("/logout").post(authMiddleware, logoutUser);
 
 export default authRouter;

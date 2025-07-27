@@ -1,4 +1,5 @@
 import express from "express";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 import {
   getCloseByUsers,
   userLocationDetails,
@@ -7,6 +8,6 @@ import {
 const locationRouter = express.Router();
 
 locationRouter.route("/coordinates").post(userLocationDetails);
-locationRouter.route("/get-near-user").get(getCloseByUsers);
+locationRouter.route("/get-near-user").get(authMiddleware, getCloseByUsers);
 
 export default locationRouter;

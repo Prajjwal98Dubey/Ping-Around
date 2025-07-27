@@ -1,26 +1,38 @@
-import { use, useCallback, useEffect, useRef, useState } from "react";
+import { lazy, use, useCallback, useEffect, useRef, useState } from "react";
 import {
+  CacheColorContext,
   LocationContext,
   NearUserContext,
   UserContext,
 } from "../context/all.context";
 import { FaLocationArrow } from "react-icons/fa";
 import { GET_NEARBY_USERS, MY_LOCATION_DETAILS } from "../apis/auth.api";
-import NearUserComp from "../components/NearUserComp";
-import { compareNearUserDetails } from "../helpers/user.helper.js";
+import {
+  compareNearUserDetails,
+  randomColorGenerator,
+} from "../helpers/user.helper.js";
+import { useNavigate } from "react-router-dom";
+
+const NearUserComp = lazy(() => import("../components/NearUserComp.jsx"));
 
 const NeighbourHood = () => {
   const { userDetails, setUserDetails } = use(UserContext);
   const { locationShared, setLocationShared } = use(LocationContext);
   const { nearUsersDetails, setNearUsersDetails } = use(NearUserContext);
+  const { cacheUserColor, setCacheUserColor } = use(CacheColorContext);
   const [isLoading, setIsLoading] = useState(false);
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
   const intervalRef = useRef(null);
+  const navigate = useNavigate();
   useEffect(() => {
     const updateNearUsers = async () => {
       let res = await fetch(
         GET_NEARBY_USERS +
-          `?lat=${userDetails.latitude}&long=${userDetails.longitude}`
+          `?lat=${userDetails.latitude}&long=${userDetails.longitude}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
       );
       res = await res.json();
       setNearUsersDetails((prev) => {
@@ -39,6 +51,17 @@ const NeighbourHood = () => {
           return { ...newNearUsers };
         }
       });
+      setCacheUserColor((prev) => {
+        let newUsersColors = {};
+        for (let key of Object.keys(res.locationDetails)) {
+          for (let obj of res.locationDetails[key]) {
+            if (!prev[obj.user_id]) {
+              newUsersColors[obj.user_id] = randomColorGenerator();
+            }
+          }
+        }
+        return { ...prev, ...newUsersColors };
+      });
     };
 
     if (locationShared && userDetails["latitude"]) {
@@ -50,6 +73,7 @@ const NeighbourHood = () => {
   }, [userDetails, locationShared]);
 
   const handleUserlocation = async () => {
+    if (!Object.keys(userDetails).length) return navigate("/login");
     if (!locationShared) {
       setIsLoading(true);
       navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -66,17 +90,24 @@ const NeighbourHood = () => {
         });
         let res = await fetch(
           GET_NEARBY_USERS +
-            `?lat=${pos.coords.latitude}&long=${pos.coords.longitude}`
+            `?lat=${pos.coords.latitude}&long=${pos.coords.longitude}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
         );
         res = await res.json();
         let newNearUsers = {};
+        let initialColors = {};
         for (let key of Object.keys(res.locationDetails)) {
           let tmp = [];
           for (let obj of res.locationDetails[key]) {
             tmp.push({ ...obj, isShow: false });
+            initialColors[obj.user_id] = randomColorGenerator();
           }
           newNearUsers[key] = [...tmp];
         }
+        setCacheUserColor({ ...cacheUserColor, ...initialColors });
         setNearUsersDetails({ ...newNearUsers });
         setLocationShared(true);
         setUserDetails({

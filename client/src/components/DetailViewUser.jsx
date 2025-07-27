@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
   FaEnvelope,
   FaAlignLeft,
@@ -15,7 +15,7 @@ import {
   FaUserCircle,
 } from "react-icons/fa";
 import { GET_USER_DETAILS } from "../apis/auth.api";
-import { randomColorGenerator } from "../helpers/user.helper";
+import { CacheColorContext } from "../context/all.context.js";
 
 const SOCIALS = [
   {
@@ -55,12 +55,11 @@ const SOCIALS = [
   },
 ];
 
-const defaultImage = "https://api.dicebear.com/7.x/miniavs/svg?seed=profile";
-
 const DetailViewUser = ({ userId }) => {
   const [details, setDetails] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [hasImageError, setHasImageError] = useState(false);
+  const { cacheUserColor } = use(CacheColorContext);
   useEffect(() => {
     const getUserDetails = async () => {
       let res = await fetch(GET_USER_DETAILS + `?userId=${userId}`);
@@ -82,14 +81,18 @@ const DetailViewUser = ({ userId }) => {
         {details.user_image ? (
           hasImageError ? (
             <div
-              style={{ backgroundColor: randomColorGenerator() }}
+              style={{
+                backgroundColor: cacheUserColor[userId]
+                  ? cacheUserColor[userId]
+                  : "black",
+              }}
               className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg text-xl md:text-2xl text-white font-extrabold mb-4 flex justify-center items-center"
             >
               {details.first_name.charAt(0).toUpperCase()}
             </div>
           ) : (
             <img
-              src={details.user_image || defaultImage}
+              src={details.user_image}
               alt="Profile"
               onError={() => setHasImageError(true)}
               className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg bg-white/20 mb-4"
@@ -97,7 +100,9 @@ const DetailViewUser = ({ userId }) => {
           )
         ) : (
           <div
-            style={{ backgroundColor: randomColorGenerator() }}
+            style={{ backgroundColor: cacheUserColor[userId]
+                  ? cacheUserColor[userId]
+                  : "black" }}
             className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg  mb-4 text-xl md:text-2xl text-white font-extrabold flex justify-center items-center"
           >
             {details.first_name.charAt(0).toUpperCase()}
@@ -167,7 +172,9 @@ const DetailViewUser = ({ userId }) => {
                   className="flex items-center gap-2 bg-white/10 hover:bg-[#0ea5e9]/20 px-4 py-2 rounded-full transition text-sm font-semibold"
                 >
                   {s.icon}
-                  <span className="hidden sm:inline text-gray-400">{s.label}</span>
+                  <span className="hidden sm:inline text-gray-400">
+                    {s.label}
+                  </span>
                 </a>
               )
           )}

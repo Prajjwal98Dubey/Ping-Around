@@ -2,27 +2,40 @@
 
 import { use, useEffect, useState } from "react";
 import { USER_AUTH } from "../apis/auth.api";
-import { UserContext } from "../context/all.context";
+import {
+  AuthContext,
+  CacheColorContext,
+  UserContext,
+} from "../context/all.context.js";
+import { randomColorGenerator } from "../helpers/user.helper.js";
 export function useAuth() {
   const { setUserDetails } = use(UserContext);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [checkAuth, setCheckAuth] = useState(false);
+  const { setIsAuthenticated, setIsLoading } = use(AuthContext);
+  const { cacheUserColor, setCacheUserColor } = use(CacheColorContext);
   useEffect(() => {
     const fetchUserDetails = async () => {
       let res = await fetch(USER_AUTH, {
         method: "GET",
         credentials: "include",
       });
-      if (res.status == 400) {
-        setIsAuthenticated(false);
+      if (res.status == 204 || res.status == 400) {
+        setCheckAuth(false);
       } else {
         res = await res.json();
         setUserDetails(res.userDetails);
+        setCheckAuth(true);
         setIsAuthenticated(true);
+        setCacheUserColor({
+          ...cacheUserColor,
+          [res.userDetails.user_id]: randomColorGenerator(),
+        });
       }
+      setLoading(false);
       setIsLoading(false);
     };
     fetchUserDetails();
-  }, [setUserDetails]);
-  return { isAuthenticated, isLoading };
+  }, []);
+  return { checkAuth, loading };
 }

@@ -1,11 +1,14 @@
 import { createPortal } from "react-dom";
-import ViewUser from "./ViewUser.jsx";
-import { memo, useState } from "react";
-import { randomColorGenerator } from "../helpers/user.helper.js";
+import { lazy, memo, use, useState } from "react";
+import { CacheColorContext } from "../context/all.context.js";
+
+const ViewUser = lazy(() => import("./ViewUser.jsx"));
 
 const NearUserComp = memo(
   ({ user, handleMouseOver, handleMouseLeave, hoverPos }) => {
     const [hasImageError, setHasImageError] = useState(false);
+    const { cacheUserColor } = use(CacheColorContext);
+
     return (
       <div
         className="flex px-1 cursor-pointer relative"
@@ -16,7 +19,11 @@ const NearUserComp = memo(
           {user.user_image ? (
             hasImageError ? (
               <div
-                style={{ backgroundColor: randomColorGenerator() }}
+                style={{
+                  backgroundColor: cacheUserColor[user.user_id]
+                    ? cacheUserColor[user.user_id]
+                    : "black",
+                }}
                 className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] rounded-full flex justify-center items-center text-white font-extrabold"
               >
                 {user.first_name.charAt(0).toUpperCase()}

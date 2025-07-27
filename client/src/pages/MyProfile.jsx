@@ -12,10 +12,16 @@ import {
   FaReddit,
   FaUserEdit,
 } from "react-icons/fa";
-import { UserContext } from "../context/all.context.js";
+import {
+  AuthContext,
+  CacheColorContext,
+  LocationContext,
+  NearUserContext,
+  UserContext,
+} from "../context/all.context.js";
 import { profileReducer } from "../helpers/reducers/profile.reducer.js";
-import { Link } from "react-router-dom";
-import { randomColorGenerator } from "../helpers/user.helper.js";
+import { Link, useNavigate } from "react-router-dom";
+import { LOGOUT_USER } from "../apis/auth.api.js";
 
 const USER_SOCIALS = [
   {
@@ -56,12 +62,30 @@ const USER_SOCIALS = [
 ];
 
 const MyProfile = () => {
-  const { userDetails } = use(UserContext);
+  const { userDetails, setUserDetails } = use(UserContext);
+  const { setNearUsersDetails } = use(NearUserContext);
+  const { setLocationShared } = use(LocationContext);
+  const { setIsAuthenticated } = use(AuthContext);
   const [hasImageError, setHasImageError] = useState(false);
+  const { cacheUserColor } = use(CacheColorContext);
   const [state, profileDispatch] = useReducer(profileReducer, {
     ...userDetails,
   });
+  const navigate = useNavigate();
 
+  const handleUserLogout = async () => {
+    let res = await fetch(LOGOUT_USER, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (res.status == 200) {
+      setUserDetails({});
+      setNearUsersDetails({});
+      setLocationShared(false);
+      setIsAuthenticated(false);
+      navigate("/");
+    }
+  };
   const calculateUserGeneralInfoGridDimension = () => {
     let res = [];
     let location = [];
@@ -104,7 +128,11 @@ const MyProfile = () => {
           {state.user_image ? (
             hasImageError ? (
               <div
-                style={{ backgroundColor: randomColorGenerator() }}
+                style={{
+                  backgroundColor: cacheUserColor[state.user_id]
+                    ? cacheUserColor[state.user_id]
+                    : "black",
+                }}
                 className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg flex justify-center items-center text-white font-extrabold text-xl md:text-5xl"
               >
                 {state.first_name.charAt(0).toUpperCase()}
@@ -118,11 +146,16 @@ const MyProfile = () => {
                 }
                 alt="Profile"
                 className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg bg-white/20"
+                onError={() => setHasImageError(true)}
               />
             )
           ) : (
             <div
-              style={{ backgroundColor: randomColorGenerator() }}
+              style={{
+                backgroundColor: cacheUserColor[state.user_id]
+                  ? cacheUserColor[state.user_id]
+                  : "black",
+              }}
               className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg  flex justify-center items-center text-white font-extrabold text-xl md:text-5xl"
             >
               {state.first_name.charAt(0).toUpperCase()}
@@ -167,7 +200,7 @@ const MyProfile = () => {
             ))}
           </div>
         )}
-        <div className="grid grid-cols-5 gap-4 mt-8 justify-center">
+        <div className="grid grid-cols-5 gap-4 mt-8 mb-2 justify-center">
           {USER_SOCIALS.map(
             (social) =>
               userDetails[social.name] && {
@@ -187,6 +220,14 @@ const MyProfile = () => {
                 {s.icon}
               </a>
             ))}
+        </div>
+        <div className="flex justify-center w-full py-1">
+          <button
+            onClick={handleUserLogout}
+            className="w-full py-2 px-3 bg-red-500 hover:bg-red-600 font-[Quicksand] text-white font-bold text-2xl rounded-md"
+          >
+            logout
+          </button>
         </div>
       </div>
     </div>

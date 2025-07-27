@@ -18,11 +18,8 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 import { IoIosCloseCircle } from "react-icons/io";
-import { UserContext } from "../context/all.context.js";
-import {
-  compareUserDetails,
-  randomColorGenerator,
-} from "../helpers/user.helper.js";
+import { CacheColorContext, UserContext } from "../context/all.context.js";
+import { compareUserDetails } from "../helpers/user.helper.js";
 import { EDIT_USER } from "../apis/auth.api.js";
 import toast from "react-hot-toast";
 const USER_SOCIALS = [
@@ -78,6 +75,7 @@ const EditProfile = () => {
   const [newSocialLink, setNewSocialLink] = useState("");
   const [newSocial, setNewSocial] = useState({ isOpen: false, name: "" });
   const [hasImageError, setHasImageError] = useState(false);
+  const { cacheUserColor } = use(CacheColorContext);
 
   const handleChange = (e) => {
     setUpdateDetails({
@@ -116,8 +114,22 @@ const EditProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!updateDetails["first_name"]) {
+      toast.error("Name is Mandatory !!!", {
+        duration: 1500,
+        position: "top-center",
+      });
+      return;
+    }
     // comparing previous and updated user details
     const updatedFields = compareUserDetails(userDetails, updateDetails);
+    if (Object.keys(updatedFields).length == 0) {
+      toast.success("Nothing Changed !!!", {
+        duration: 1500,
+        position: "top-center",
+      });
+      return;
+    }
     await fetch(EDIT_USER, {
       method: "PATCH",
       headers: {
@@ -162,10 +174,14 @@ const EditProfile = () => {
               {updateDetails.user_image ? (
                 hasImageError ? (
                   <div
-                    style={{ backgroundColor: randomColorGenerator() }}
+                    style={{
+                      backgroundColor: cacheUserColor[updateDetails.user_id]
+                        ? cacheUserColor[updateDetails.user_id]
+                        : "black",
+                    }}
                     className="flex justify-center items-center text-xl text-white font-extrabold w-24 h-24 rounded-full object-cover"
                   >
-                    {updateDetails.first_name.charAt(0).toUpperCase()}
+                    {userDetails.first_name.charAt(0).toUpperCase()}
                   </div>
                 ) : (
                   <img
@@ -177,10 +193,14 @@ const EditProfile = () => {
                 )
               ) : (
                 <div
-                  style={{ backgroundColor: randomColorGenerator() }}
+                  style={{
+                    backgroundColor: cacheUserColor[updateDetails.user_id]
+                      ? cacheUserColor[updateDetails.user_id]
+                      : "black",
+                  }}
                   className="flex justify-center items-center text-xl text-white font-extrabold w-24 h-24 rounded-full object-cover"
                 >
-                  {updateDetails.first_name.charAt(0).toUpperCase()}
+                  {userDetails.first_name.charAt(0).toUpperCase()}
                 </div>
               )}
               <input
@@ -204,7 +224,7 @@ const EditProfile = () => {
             <input
               type="text"
               name="first_name"
-              value={updateDetails.first_name}
+              value={updateDetails.first_name ? updateDetails.first_name : ""}
               onChange={handleChange}
               style={{
                 background:
@@ -248,7 +268,6 @@ const EditProfile = () => {
               }}
             />
           </div>
-          {/* Contact Number */}
           <div>
             <label className="flex items-center gap-2 text-[#f59e42] font-semibold mb-1 text-sm">
               <FaPhoneAlt /> Contact Number
@@ -302,7 +321,6 @@ const EditProfile = () => {
               />
             </div>
           </div>
-          {/* Socials */}
           <div>
             <label className="flex items-center gap-2 text-[#f59e42] font-semibold mb-1 text-sm">
               <FaGlobe /> Socials

@@ -287,3 +287,31 @@ export const getUserDetails = async (req, res) => {
     console.log(error);
   }
 };
+
+export const logoutUser = async (req, res) => {
+  const userId = req.userId;
+  try {
+    const isUserPresent = await pingPool.query(
+      "SELECT USER_ID FROM LOCATION_DETAILS WHERE USER_ID=$1",
+      [userId]
+    );
+    if (!isUserPresent.rowCount) {
+      return res.status(404).json({ message: "not user found." });
+    } else {
+      await pingPool.query(
+        "UPDATE LOCATION_DETAILS SET IS_ONLINE = false WHERE USER_ID=$1",
+        [userId]
+      );
+      res.clearCookie("accessToken", {
+        httpOnly: true,
+        domain:
+          process.env.NODE_ENV == "production" ? ".nearchat.fun" : undefined,
+        sameSite: process.env.NODE_ENV == "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV == "production" ? true : false,
+      });
+      return res.status(200).json({ message: "user logged out." });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};

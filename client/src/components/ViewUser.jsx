@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, use, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   FaFacebook,
@@ -9,8 +9,7 @@ import {
   FaReddit,
   FaTwitter,
 } from "react-icons/fa";
-import DetailViewUser from "./DetailViewUser.jsx";
-import { randomColorGenerator } from "../helpers/user.helper.js";
+import { CacheColorContext } from "../context/all.context.js";
 
 const SOCIALS_LIST = [
   "user_instagram",
@@ -66,9 +65,12 @@ const USER_SOCIALS = [
   },
 ];
 
+const DetailViewUser = lazy(() => import("./DetailViewUser.jsx"));
+
 const ViewUser = ({ details, handleMouseLeave }) => {
   const [openDetailView, setOpenDetailView] = useState(false);
   const [hasImageError, setHasImageError] = useState(false);
+  const { cacheUserColor } = use(CacheColorContext);
   return (
     <div className="w-[260px] md:w-[320px] rounded-2xl bg-[#313131] text-white z-10 shadow-xl shadow-[#0ea5e9]/20 font-[Quicksand] border border-[#0ea5e9]/20 p-4 relative overflow-hidden">
       <div className="absolute -top-8 -left-8 w-24 h-24 bg-[#0ea5e9]/20 rounded-full blur-2xl pointer-events-none"></div>
@@ -77,7 +79,11 @@ const ViewUser = ({ details, handleMouseLeave }) => {
           {details.user_image ? (
             hasImageError ? (
               <div
-                style={{ backgroundColor: randomColorGenerator() }}
+                style={{
+                  backgroundColor: cacheUserColor[details.user_id]
+                    ? cacheUserColor[details.user_id]
+                    : "black",
+                }}
                 className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-[#0ea5e9] shadow flex justify-center items-center font-extrabold text-white"
               >
                 {details.first_name.charAt(0).toUpperCase()}
@@ -147,9 +153,7 @@ const ViewUser = ({ details, handleMouseLeave }) => {
                 }}
                 className="fixed top-0 w-full min-h-screen bg-gray-400/40 flex justify-center items-center"
               ></div>
-              <DetailViewUser
-                userId={details.user_id}
-              />
+              <DetailViewUser userId={details.user_id} />
             </>,
             document.getElementById("modal")
           )}

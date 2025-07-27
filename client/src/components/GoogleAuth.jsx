@@ -1,10 +1,12 @@
 import { use, useEffect } from "react";
 import { VALIDATE_GOOGLE_AUTH } from "../apis/auth.api.js";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../context/all.context.js";
+import { AuthContext, UserContext } from "../context/all.context.js";
 function GoogleAuth() {
   const navigate = useNavigate();
   const { setUserDetails } = use(UserContext);
+  const { setIsAuthenticated, setIsLoading } = use(AuthContext);
+
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   useEffect(() => {
     setTimeout(() => {
@@ -31,6 +33,8 @@ function GoogleAuth() {
     });
     res = await res.json();
     setUserDetails({ ...res.userDetails });
+    setIsAuthenticated(true);
+    setIsLoading(false);
     navigate("/");
   };
 

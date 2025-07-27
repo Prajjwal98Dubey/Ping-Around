@@ -1,8 +1,9 @@
 import "@fontsource/quicksand/700.css";
 import "@fontsource/quicksand/400.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { lazy } from "react";
+import { lazy, use } from "react";
 import { Toaster } from "react-hot-toast";
+import { AuthContext } from "./context/all.context.js";
 
 const Home = lazy(() => import("./pages/Home.jsx"));
 const Login = lazy(() => import("./pages/Login.jsx"));
@@ -12,8 +13,12 @@ const MyProfile = lazy(() => import("./pages/MyProfile.jsx"));
 const EditProfile = lazy(() => import("./pages/EditProfile.jsx"));
 const NeighbourHood = lazy(() => import("./pages/NeighbourHood.jsx"));
 const Error = lazy(() => import("./pages/Error.jsx"));
-
+import { useAuth } from "./custom-hooks/useAuth.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 function App() {
+  const { isLoading } = use(AuthContext);
+  useAuth();
+  if (isLoading) return <h1>Loading....</h1>;
   return (
     <>
       <RouterProvider router={appRouter} />
@@ -39,11 +44,19 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "me",
-        element: <MyProfile />,
+        element: (
+          <ProtectedRoute>
+            <MyProfile />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "edit-profile",
-        element: <EditProfile />,
+        element: (
+          <ProtectedRoute>
+            <EditProfile />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

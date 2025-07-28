@@ -64,7 +64,7 @@ const USER_SOCIALS = [
 const MyProfile = () => {
   const { userDetails, setUserDetails } = use(UserContext);
   const { setNearUsersDetails } = use(NearUserContext);
-  const { setLocationShared } = use(LocationContext);
+  const { locationShared, setLocationShared } = use(LocationContext);
   const { setIsAuthenticated } = use(AuthContext);
   const [hasImageError, setHasImageError] = useState(false);
   const { cacheUserColor } = use(CacheColorContext);
@@ -79,6 +79,21 @@ const MyProfile = () => {
       credentials: "include",
     });
     if (res.status == 200) {
+      if (locationShared) {
+        await fetch("http://localhost:5000/api/v1/event/user-detail", {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            userDetails: {
+              user_id: userDetails.user_id,
+            },
+            isJoined: false,
+          }),
+          credentials: "include",
+        });
+      }
       setUserDetails({});
       setNearUsersDetails({});
       setLocationShared(false);

@@ -1,4 +1,4 @@
-import { lazy, use, useCallback, useEffect, useRef, useState } from "react";
+import { lazy, use, useCallback, useState } from "react";
 import {
   CacheColorContext,
   LocationContext,
@@ -8,7 +8,8 @@ import {
 import { FaLocationArrow } from "react-icons/fa";
 import { GET_NEARBY_USERS, MY_LOCATION_DETAILS } from "../apis/auth.api";
 import {
-  compareNearUserDetails,
+  calculateDefinedKey,
+  calculateHaverSineDistance,
   randomColorGenerator,
 } from "../helpers/user.helper.js";
 import { useNavigate } from "react-router-dom";
@@ -22,8 +23,10 @@ const NeighbourHood = () => {
   const { cacheUserColor, setCacheUserColor } = use(CacheColorContext);
   const [isLoading, setIsLoading] = useState(false);
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
-  const intervalRef = useRef(null);
+  // const intervalRef = useRef(null);
   const navigate = useNavigate();
+
+  /*
   useEffect(() => {
     const updateNearUsers = async () => {
       let res = await fetch(
@@ -72,6 +75,8 @@ const NeighbourHood = () => {
     return () => clearInterval(intervalRef.current);
   }, [userDetails, locationShared]);
 
+  */
+
   const handleUserlocation = async () => {
     if (!Object.keys(userDetails).length) return navigate("/login");
     if (!locationShared) {
@@ -97,6 +102,7 @@ const NeighbourHood = () => {
           }
         );
         res = await res.json();
+
         let newNearUsers = {};
         let initialColors = {};
         for (let key of Object.keys(res.locationDetails)) {
@@ -107,6 +113,79 @@ const NeighbourHood = () => {
           }
           newNearUsers[key] = [...tmp];
         }
+        // SSE
+        const es = new EventSource(
+          "http://localhost:5000/api/v1/event/connect"
+        );
+        await fetch("http://localhost:5000/api/v1/event/user-detail", {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            userDetails: {
+              ...userDetails,
+              ["latitude"]: pos.coords.latitude,
+              ["longitude"]: pos.coords.longitude,
+            },
+            isJoined: true,
+          }),
+          credentials: "include",
+        });
+
+        // event listener of SSE
+        es.onmessage = (e) => {
+          let data = JSON.parse(e.data);
+          if (data.userDetails["user_id"] != userDetails["user_id"]) {
+            if (!data["isJoined"]) {
+              setNearUsersDetails((prev) => {
+                let newUsers = {};
+                for (let key in prev) {
+                  let tmp = [];
+                  for (let obj of prev[key]) {
+                    if (obj.user_id != data.userDetails.user_id) tmp.push(obj);
+                  }
+                  newUsers[key] = [...tmp];
+                }
+                return { ...newUsers };
+              });
+              setCacheUserColor((prev) => {
+                let newUserCache = {};
+                for (let key in prev) {
+                  if (key != data.userDetails.user_id)
+                    newUserCache[key] = prev[key];
+                }
+                return { ...newUserCache };
+              });
+            } else {
+              let dis = calculateHaverSineDistance(
+                { lat1: pos.coords.latitude, lon1: pos.coords.longitude },
+                {
+                  lat2: data.userDetails["latitude"],
+                  lon2: data.userDetails["longitude"],
+                }
+              );
+              let definedKey = calculateDefinedKey(dis);
+              setNearUsersDetails((prev) => {
+                let newUsers = {};
+                for (let key in prev) {
+                  if (key == definedKey) {
+                    newUsers[key] = [...prev[key], { ...data.userDetails }];
+                  } else {
+                    newUsers[key] = [...prev[key]];
+                  }
+                }
+                return { ...newUsers };
+              });
+              setCacheUserColor((prev) => {
+                return {
+                  ...prev,
+                  [data.userDetails.user_id]: randomColorGenerator(),
+                };
+              });
+            }
+          }
+        };
         setCacheUserColor({ ...cacheUserColor, ...initialColors });
         setNearUsersDetails({ ...newNearUsers });
         setLocationShared(true);

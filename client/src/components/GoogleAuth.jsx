@@ -1,11 +1,17 @@
 import { use, useEffect } from "react";
 import { VALIDATE_GOOGLE_AUTH } from "../apis/auth.api.js";
 import { useNavigate } from "react-router-dom";
-import { AuthContext, UserContext } from "../context/all.context.js";
+import {
+  AuthContext,
+  CacheColorContext,
+  UserContext,
+} from "../context/all.context.js";
+import { randomColorGenerator } from "../helpers/user.helper.js";
 function GoogleAuth() {
   const navigate = useNavigate();
   const { setUserDetails } = use(UserContext);
   const { setIsAuthenticated, setIsLoading } = use(AuthContext);
+  const { cacheUserColor, setCacheUserColor } = use(CacheColorContext);
 
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   useEffect(() => {
@@ -32,6 +38,10 @@ function GoogleAuth() {
       credentials: "include",
     });
     res = await res.json();
+    setCacheUserColor({
+      ...cacheUserColor,
+      [res.userDetails.user_id]: randomColorGenerator(),
+    });
     setUserDetails({ ...res.userDetails });
     setIsAuthenticated(true);
     setIsLoading(false);

@@ -18,6 +18,7 @@ app.use(
 const ENV = process.env.NODE_ENV;
 
 app.use(express.json());
+app.use(express.text());
 dotenv.config({
   path: ENV == "production" ? ".env.production" : ".env.local",
 });
@@ -47,7 +48,10 @@ app.post("/api/v1/event/user-detail", async (req, res) => {
   let redisClient = await getRedisClient();
   const details = req.body;
   try {
-    await redisClient.publish("channel:new_user", JSON.stringify(details));
+    await redisClient.publish(
+      "channel:new_user",
+      typeof details == "string" ? details : JSON.stringify(details)
+    );
   } catch (err) {
     console.log(err);
   }

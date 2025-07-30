@@ -50,3 +50,18 @@ export const getCloseByUsers = async (req, res) => {
     console.log(error);
   }
 };
+
+export const changeUserLocationStatus = async (req, res) => {
+  const { userId } = JSON.parse(req.body);
+  try {
+    let updateDetails = await pingPool.query(
+      "UPDATE LOCATION_DETAILS SET IS_ONLINE = false WHERE USER_ID = $1",
+      [userId]
+    );
+    if (!updateDetails.rowCount)
+      return res.json({ message: "user does not exist." });
+    return res.json({ message: "location turned off." });
+  } catch (error) {
+    console.log(error);
+  }
+};

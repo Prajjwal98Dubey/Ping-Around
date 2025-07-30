@@ -16,6 +16,7 @@ const getRedisClient = async () => {
     try {
       redisClient = createClient();
       await redisClient.connect();
+      return redisClient;
     } catch (error) {
       console.log("ERROR WHILE RECONNECTING REDIS", error);
     }

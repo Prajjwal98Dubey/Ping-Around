@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { generateToken } from "../helpers/jwt.helpers.js";
 import { genSalt, hash, compare } from "bcrypt";
 import pingPool from "../db/configDB.js";
+import { getRedisClient } from "../db/connetRedis.js";
 
 export const validateGoogleAuth = async (req, res) => {
   const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -174,7 +175,7 @@ export const loginUser = async (req, res) => {
           sameSite: process.env.NODE_ENV == "production" ? "none" : "lax",
           secure: process.env.NODE_ENV == "production" ? true : false,
         });
-          return res.status(200).json({
+        return res.status(200).json({
           isThirdParyLogin: false,
           userDetails: { ...userDetails.user, ...userSocials.rows[0] },
         });
@@ -311,6 +312,26 @@ export const logoutUser = async (req, res) => {
       });
       return res.status(200).json({ message: "user logged out." });
     }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const editUserImage = async (req, res) => {
+  const userId = req.userId;
+  try {
+    let redisClient = await getRedisClient();
+    let isUserIdExists = await redisClient.get(userId);
+    if (!isUserIdExists) return res.json({ message: "this user cannot edit." }); // if userId not there and url is ""
+    await pingPool.query(
+      "UPDATE USERS SET USER_IMAGE = $1 WHERE USER_ID = $2",
+      [isUserIdExists, userId]
+    );
+    await redisClient.del(userId);
+    return res.json({
+      message: "user image updated !!!!",
+      url: isUserIdExists,
+    });
   } catch (error) {
     console.log(error);
   }

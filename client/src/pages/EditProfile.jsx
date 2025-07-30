@@ -20,7 +20,11 @@ import {
 import { IoIosCloseCircle } from "react-icons/io";
 import { CacheColorContext, UserContext } from "../context/all.context.js";
 import { compareUserDetails } from "../helpers/user.helper.js";
-import { EDIT_USER } from "../apis/auth.api.js";
+import {
+  EDIT_USER,
+  EDIT_USER_IMAGE,
+  HANDLE_USER_IMAGE_UPLOAD,
+} from "../apis/auth.api.js";
 import toast from "react-hot-toast";
 const USER_SOCIALS = [
   {
@@ -73,6 +77,10 @@ const EditProfile = () => {
     ...userDetails,
   });
   const [newSocialLink, setNewSocialLink] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [fileType, setFileType] = useState("");
+  const [fileDetail, setFileDetail] = useState({});
+
   const [newSocial, setNewSocial] = useState({ isOpen: false, name: "" });
   const [hasImageError, setHasImageError] = useState(false);
   const { cacheUserColor } = use(CacheColorContext);
@@ -86,13 +94,44 @@ const EditProfile = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setProfile({ ...profile, image: ev.target.result });
-      };
-      reader.readAsDataURL(file);
+    setFileName(file.name);
+    setFileType(file.type);
+    setFileDetail(file);
+  };
+  const handleUploadUserImage = async () => {
+    if (!fileName.length) {
+      toast.error("select a image to continue", {
+        position: "top-center",
+        duration: 1500,
+      });
+      return;
     }
+    let res = await fetch(HANDLE_USER_IMAGE_UPLOAD, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fileName,
+        fileType,
+      }),
+      credentials: "include",
+    });
+    res = await res.json();
+    await fetch(res.signedUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": fileType,
+      },
+      body: fileDetail,
+    });
+    let result = await fetch(EDIT_USER_IMAGE, {
+      credentials: "include",
+    });
+    result = await result.json();
+    setUpdateDetails({ ...updateDetails, ["user_image"]: result.url });
+    setUserDetails({ ...userDetails, ["user_image"]: result.url });
+    return;
   };
   const handleSocialLink = (e) => {
     setNewSocial({
@@ -187,7 +226,7 @@ const EditProfile = () => {
                   <img
                     src={updateDetails.user_image}
                     alt="Profile"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-[#0ea5e9] shadow-lg"
+                    className="w-24 h-24 rounded-full border-4 border-[#0ea5e9] shadow-lg"
                     onError={() => setHasImageError(true)}
                   />
                 )
@@ -216,6 +255,15 @@ const EditProfile = () => {
             <span className="text-xs text-gray-400 mt-2">
               Click on the image to change your profile picture
             </span>
+          </div>
+          <div className="flex justify-center items-center">
+            <button
+              onClick={handleUploadUserImage}
+              type="button"
+              className="flex justify-center items-center py-2 px-3 rounded-md text-white bg-gradient-to-r from-green-400 to-green-500 cursor-pointer font-bold text-lg hover:from-green-600 hover:to-green-700 "
+            >
+              Upload Photo
+            </button>
           </div>
           <div>
             <label className="flex items-center gap-2 text-[#6366f1] font-semibold mb-1 text-sm">

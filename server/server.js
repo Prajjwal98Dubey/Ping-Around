@@ -5,6 +5,7 @@ import authRouter from "./routes/auth.route.js";
 import locationRouter from "./routes/location.route.js";
 import { connectRedis, getRedisClient } from "./db/connetRedis.js";
 import { createClient } from "redis";
+import uploadRouter from "./routes/uploads.route.js";
 
 const app = express();
 app.use(
@@ -26,6 +27,10 @@ app.use("/api/v1/auth", authRouter);
 
 // LOCATION
 app.use("/api/v1/location", locationRouter);
+
+// uploads
+
+app.use("/api/v1/upload", uploadRouter);
 
 // events
 let clients = [];

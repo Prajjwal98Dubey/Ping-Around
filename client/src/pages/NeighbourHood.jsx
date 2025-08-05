@@ -23,59 +23,7 @@ const NeighbourHood = () => {
   const { cacheUserColor, setCacheUserColor } = use(CacheColorContext);
   const [isLoading, setIsLoading] = useState(false);
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
-  // const intervalRef = useRef(null);
   const navigate = useNavigate();
-
-  /*
-  useEffect(() => {
-    const updateNearUsers = async () => {
-      let res = await fetch(
-        GET_NEARBY_USERS +
-          `?lat=${userDetails.latitude}&long=${userDetails.longitude}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-      res = await res.json();
-      setNearUsersDetails((prev) => {
-        if (Object.keys(prev).length) {
-          let newNearUsers = compareNearUserDetails(prev, res.locationDetails);
-          return { ...newNearUsers };
-        } else {
-          let newNearUsers = {};
-          for (let key of Object.keys(res.locationDetails)) {
-            let tmp = [];
-            for (let obj of res.locationDetails[key]) {
-              tmp.push({ ...obj, isShow: false });
-            }
-            newNearUsers[key] = tmp;
-          }
-          return { ...newNearUsers };
-        }
-      });
-      setCacheUserColor((prev) => {
-        let newUsersColors = {};
-        for (let key of Object.keys(res.locationDetails)) {
-          for (let obj of res.locationDetails[key]) {
-            if (!prev[obj.user_id]) {
-              newUsersColors[obj.user_id] = randomColorGenerator();
-            }
-          }
-        }
-        return { ...prev, ...newUsersColors };
-      });
-    };
-
-    if (locationShared && userDetails["latitude"]) {
-      intervalRef.current = setInterval(() => {
-        updateNearUsers();
-      }, 10000);
-    }
-    return () => clearInterval(intervalRef.current);
-  }, [userDetails, locationShared]);
-
-  */
 
   const handleUserlocation = async () => {
     if (!Object.keys(userDetails).length) return navigate("/login");

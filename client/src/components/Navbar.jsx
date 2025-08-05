@@ -1,10 +1,11 @@
-import { use } from "react";
-import { FaUserCircle } from "react-icons/fa";
-import { UserContext } from "../context/all.context.js";
+import { use, useState } from "react";
+import { CacheColorContext, UserContext } from "../context/all.context.js";
 import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const { userDetails } = use(UserContext);
+  const { cacheUserColor } = use(CacheColorContext);
+  const [hasImageError, setHasImageError] = useState(false);
   return (
     <>
       <Link to="/">
@@ -20,15 +21,38 @@ const Navbar = () => {
         {Object.keys(userDetails).length ? (
           userDetails.user_image ? (
             <Link to="/me">
-              <img
-                src={userDetails.user_image}
-                className="w-[40px] h-[40px] rounded-full"
-                alt="user_image"
-              />
+              {hasImageError ? (
+                <div
+                  style={{
+                    backgroundColor: cacheUserColor[userDetails.user_id]
+                      ? cacheUserColor[userDetails.user_id]
+                      : "black",
+                  }}
+                  className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-[#0ea5e9] shadow flex justify-center items-center font-extrabold text-white"
+                >
+                  {userDetails.first_name.charAt(0).toUpperCase()}
+                </div>
+              ) : (
+                <img
+                  src={userDetails.user_image}
+                  className="w-[40px] h-[40px] rounded-full"
+                  alt="user_image"
+                  onError={() => setHasImageError(true)}
+                />
+              )}
             </Link>
           ) : (
             <Link to="/me">
-              <FaUserCircle className="text-[#f59e42] text-4xl md:text-5xl drop-shadow-xl hover:scale-110 transition-transform" />
+              <div
+                style={{
+                  backgroundColor: cacheUserColor[userDetails.user_id]
+                    ? cacheUserColor[userDetails.user_id]
+                    : "black",
+                }}
+                className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-[#0ea5e9] shadow flex justify-center items-center font-extrabold text-white"
+              >
+                {userDetails.first_name.charAt(0).toUpperCase()}
+              </div>
             </Link>
           )
         ) : (

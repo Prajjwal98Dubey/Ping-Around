@@ -6,6 +6,7 @@ import locationRouter from "./routes/location.route.js";
 import { connectRedis, getRedisClient } from "./db/connetRedis.js";
 import { createClient } from "redis";
 import uploadRouter from "./routes/uploads.route.js";
+import { start } from "./ws/user.rooms.js";
 
 const app = express();
 app.use(
@@ -69,5 +70,6 @@ subscriber.subscribe("channel:new_user", (message) => {
 
 app.listen(5000, async () => {
   await connectRedis();
+  start();
   console.log(`server listening at ${process.env.PORT || 5000}`);
 });

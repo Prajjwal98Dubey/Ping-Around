@@ -37,7 +37,14 @@ const NearUserComp = memo(
               />
             )
           ) : (
-            <div className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] rounded-full bg-[#313131] flex justify-center items-center text-white font-extrabold">
+            <div
+              style={{
+                backgroundColor: cacheUserColor[user.user_id]
+                  ? cacheUserColor[user.user_id]
+                  : "black",
+              }}
+              className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] rounded-full flex justify-center items-center text-white font-extrabold"
+            >
               {user.first_name.charAt(0).toUpperCase()}
             </div>
           )}

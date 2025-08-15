@@ -1,4 +1,4 @@
-import { lazy, use, useCallback, useState } from "react";
+import { lazy, use, useCallback, useRef, useState } from "react";
 import {
   CacheColorContext,
   LocationContext,
@@ -13,6 +13,9 @@ import {
   randomColorGenerator,
 } from "../helpers/user.helper.js";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+import { latLngToCell, gridDisk } from "h3-js";
+import Chat from "../components/Chat.jsx";
 
 const NearUserComp = lazy(() => import("../components/NearUserComp.jsx"));
 
@@ -23,6 +26,9 @@ const NeighbourHood = () => {
   const { cacheUserColor, setCacheUserColor } = use(CacheColorContext);
   const [isLoading, setIsLoading] = useState(false);
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
+  const [chats, setChats] = useState([]);
+  const [roomId, setRoomId] = useState("");
+  const socketRef = useRef(null);
   const navigate = useNavigate();
 
   const handleUserlocation = async () => {
@@ -37,13 +43,15 @@ const NeighbourHood = () => {
           },
           body: JSON.stringify({
             userId: userDetails.user_id,
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
+            latitude: pos.coords.latitude.toFixed(4),
+            longitude: pos.coords.longitude.toFixed(4),
           }),
         });
         let res = await fetch(
           GET_NEARBY_USERS +
-            `?lat=${pos.coords.latitude}&long=${pos.coords.longitude}`,
+            `?lat=${pos.coords.latitude.toFixed(
+              4
+            )}&long=${pos.coords.longitude.toFixed(4)}`,
           {
             method: "GET",
             credentials: "include",
@@ -73,14 +81,25 @@ const NeighbourHood = () => {
           body: JSON.stringify({
             userDetails: {
               ...userDetails,
-              ["latitude"]: pos.coords.latitude,
-              ["longitude"]: pos.coords.longitude,
+              ["latitude"]: pos.coords.latitude.toFixed(4),
+              ["longitude"]: pos.coords.longitude.toFixed(4),
             },
             isJoined: true,
           }),
           credentials: "include",
         });
-
+        const cell = latLngToCell(
+          pos.coords.latitude.toFixed(4),
+          pos.coords.longitude.toFixed(4),
+          8
+        );
+        const cells = gridDisk(cell, 1);
+        socketRef.current = io("ws://localhost:5001");
+        socketRef.current.emit("rooms_list", { rooms: cells });
+        socketRef.current.on("get_room_message", ({ message }) => {
+          setChats((prev) => [...prev, { message, me: false }]);
+        });
+        setRoomId(cell);
         // event listener of SSE
         es.onmessage = (e) => {
           let data = JSON.parse(e.data);
@@ -107,7 +126,10 @@ const NeighbourHood = () => {
               });
             } else {
               let dis = calculateHaverSineDistance(
-                { lat1: pos.coords.latitude, lon1: pos.coords.longitude },
+                {
+                  lat1: pos.coords.latitude.toFixed(4),
+                  lon1: pos.coords.longitude.toFixed(4),
+                },
                 {
                   lat2: data.userDetails["latitude"],
                   lon2: data.userDetails["longitude"],
@@ -139,14 +161,13 @@ const NeighbourHood = () => {
         setLocationShared(true);
         setUserDetails({
           ...userDetails,
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
+          latitude: pos.coords.latitude.toFixed(4),
+          longitude: pos.coords.longitude.toFixed(4),
         });
       });
       setIsLoading(false);
     }
   };
-
   const handleMouseOver = useCallback(
     (e, userId) => {
       let newNearUserDetails = {};
@@ -241,6 +262,16 @@ const NeighbourHood = () => {
               </div>
             ))}
           </div>
+        </div>
+      )}
+      {locationShared && (
+        <div className="fixed bottom-0 lg:right-3 right-2">
+          <Chat
+            chats={chats}
+            socketRef={socketRef}
+            roomId={roomId}
+            setChats={setChats}
+          />
         </div>
       )}
     </div>

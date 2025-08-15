@@ -2,3 +2,4 @@
 .env.production
 configDB.js
 node_modules
+aws-config.txt

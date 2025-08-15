@@ -97,7 +97,14 @@ const ViewUser = ({ details, handleMouseLeave }) => {
               />
             )
           ) : (
-            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#232526] flex justify-center items-center font-bold text-2xl border-2 border-[#0ea5e9] shadow">
+            <div
+              style={{
+                backgroundColor: cacheUserColor[details.user_id]
+                  ? cacheUserColor[details.user_id]
+                  : "black",
+              }}
+              className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-[#0ea5e9] shadow flex justify-center items-center font-extrabold text-white"
+            >
               {details.first_name.charAt(0).toUpperCase()}
             </div>
           )}

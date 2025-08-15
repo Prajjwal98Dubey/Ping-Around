@@ -100,9 +100,11 @@ const DetailViewUser = ({ userId }) => {
           )
         ) : (
           <div
-            style={{ backgroundColor: cacheUserColor[userId]
-                  ? cacheUserColor[userId]
-                  : "black" }}
+            style={{
+              backgroundColor: cacheUserColor[userId]
+                ? cacheUserColor[userId]
+                : "black",
+            }}
             className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#0ea5e9] object-cover shadow-lg  mb-4 text-xl md:text-2xl text-white font-extrabold flex justify-center items-center"
           >
             {details.first_name.charAt(0).toUpperCase()}

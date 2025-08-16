@@ -17,10 +17,15 @@ io.on("connection", (socket) => {
     rooms.forEach((room) => socket.join(room));
     socket.on(
       "post_room_message",
-      ({ roomId, message, userImage, userName, userId }) => {
-        socket.broadcast
-          .to(roomId)
-          .emit("get_room_message", { message, userImage, userName, userId });
+      ({ roomId, message, userImage, userName, userId, isImage, imageUrl }) => {
+        socket.broadcast.to(roomId).emit("get_room_message", {
+          message,
+          userImage,
+          userName,
+          userId,
+          imageUrl,
+          isImage,
+        });
       }
     );
   });

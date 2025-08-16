@@ -1,11 +1,18 @@
 import { use, useEffect, useRef, useState } from "react";
 import { CacheColorContext, UserContext } from "../context/all.context";
+import { FaCamera } from "react-icons/fa";
+import { HANDLE_USER_IMAGE_UPLOAD } from "../apis/auth.api";
 
 const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
   const [message, setMessage] = useState("");
   const { userDetails } = use(UserContext);
   const { cacheUserColor } = use(CacheColorContext);
   const scrollRef = useRef(null);
+  const [fileName, setFileName] = useState("");
+  const [fileType, setFileType] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [fileDetails, setFileDetails] = useState({});
+  const [selectedImage, setSelectedImage] = useState("");
 
   useEffect(() => {
     const setScrollHeight = () => {
@@ -22,13 +29,37 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
     });
   }, []);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
+    let imageUrl = "";
+    if (fileName) {
+      setIsLoading(true);
+      let res = await fetch(HANDLE_USER_IMAGE_UPLOAD, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fileName, fileType }),
+        credentials: "include",
+      });
+      res = await res.json();
+      await fetch(res.signedUrl, {
+        method: "PUT",
+        headers: {
+          "Content-type": fileType,
+        },
+        body: fileDetails,
+      });
+      imageUrl = res.publicUrl;
+      setIsLoading(false);
+    }
     socketRef.current.emit("post_room_message", {
       roomId,
       message,
       userImage: userDetails.user_image,
       userName: userDetails.first_name,
       userId: userDetails.user_id,
+      isImage: imageUrl ? true : false,
+      imageUrl,
     });
     setChats((prev) => [
       ...prev,
@@ -37,9 +68,16 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
         userName: userDetails.first_name,
         message,
         me: true,
+        isImage: imageUrl ? true : false,
+        imageUrl,
       },
     ]);
     setMessage("");
+    setFileName("");
+    setFileDetails({});
+    setFileType("");
+    setSelectedImage("");
+    imageUrl = "";
   };
 
   return (
@@ -54,11 +92,21 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
         {chats.map((chat, index) => {
           return chat.me ? (
             <div key={index} className="w-full flex px-1 justify-end my-1">
-              <div className="px-2 bg-green-500 font-bold w-fit h-fit rounded-md">
-                <p className=" text-white text-[13px] font-bold my-[2px]">
-                  {chat.message}
-                </p>
-              </div>
+              {chat.isImage ? (
+                <div className="px-2 py-2">
+                  <img
+                    src={chat.imageUrl}
+                    alt="photo"
+                    className="w-[60px] h-[60px] rounded-md"
+                  />
+                </div>
+              ) : (
+                <div className="px-2 bg-green-500 font-bold w-fit h-fit rounded-md">
+                  <p className=" text-white text-[13px] font-bold my-[2px]">
+                    {chat.message}
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             <div key={index} className="w-full flex px-1 justify-start my-1">
@@ -87,17 +135,43 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
                     {chat.userName}
                   </p>
                 </div>
-                <div>
-                  <p className=" text-white text-[13px] font-bold mb-[3px]">
-                    {chat.message}
-                  </p>
-                </div>
+                {chat.isImage ? (
+                  <div className="px-2 py-2">
+                    <img
+                      src={chat.imageUrl}
+                      alt="photo"
+                      className="w-[60px] h-[60px] rounded-md"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <p className=" text-white text-[13px] font-bold mb-[3px]">
+                      {chat.message}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           );
         })}
       </div>
       <div className="w-full h-[10%] relative">
+        <div className=" absolute left-1 top-[10px] hover:border hover:border-gray-600 cursor-pointer border border-gray-400 bg-[#313131] rounded-full w-[40px] h-[40px] px-1 py-1 flex justify-center items-center text-white font-bold">
+          <label>
+            <FaCamera className="cursor-pointer" />
+            <input
+              onChange={(e) => {
+                setFileName(e.target.files[0].name);
+                setFileType(e.target.files[0].type);
+                setFileDetails(e.target.files[0]);
+                setSelectedImage(e.target.files[0]);
+              }}
+              type="file"
+              className="sr-only"
+              accept="image/*"
+            />
+          </label>
+        </div>
         <textarea
           id="inp_container"
           value={message}
@@ -105,9 +179,20 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
           onChange={(e) => setMessage(e.target.value)}
           className="w-full h-full bg-[#313131] rounded-md text-white font-bold text-xl px-2 py-1"
         ></textarea>
+        {fileName && (
+          <div className="fixed top-0 left-3">
+            <img
+              src={URL.createObjectURL(selectedImage)}
+              alt="photo"
+              className="w-[70px] h-[70px] rounded-md"
+            />
+          </div>
+        )}
         <button
           onClick={handleSendMessage}
-          className="absolute right-0 top-0 bg-blue-500 h-full w-[130px] rounded-md text-xl font-bold text-white"
+          className={`absolute right-0 top-0 ${
+            isLoading ? "bg-slate-400" : "bg-blue-500"
+          } h-full w-[130px] rounded-md text-xl font-bold text-white`}
         >
           send
         </button>

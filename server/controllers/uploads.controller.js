@@ -27,7 +27,7 @@ export const getPresignedUrl = async (req, res) => {
     let redisClient = await getRedisClient();
     const awsPublicUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.ap-south-1.amazonaws.com/uploads/${newFileName}`;
     await redisClient.set(userId, awsPublicUrl);
-    return res.json({ signedUrl });
+    return res.json({ signedUrl, publicUrl: awsPublicUrl });
   } catch (err) {
     console.log("SOME AWS ERROR", err);
   }

@@ -98,10 +98,18 @@ const NeighbourHood = () => {
         socketRef.current.emit("rooms_list", { rooms: cells });
         socketRef.current.on(
           "get_room_message",
-          ({ message, userImage, userName, userId }) => {
+          ({ message, userImage, userName, userId,isImage,imageUrl }) => {
             setChats((prev) => [
               ...prev,
-              { message, me: false, userImage, userName, userId },
+              {
+                message,
+                me: false,
+                userImage,
+                userName,
+                userId,
+                isImage,
+                imageUrl,
+              },
             ]);
           }
         );

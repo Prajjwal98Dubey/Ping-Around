@@ -96,9 +96,15 @@ const NeighbourHood = () => {
         const cells = gridDisk(cell, 1);
         socketRef.current = io("ws://localhost:5001");
         socketRef.current.emit("rooms_list", { rooms: cells });
-        socketRef.current.on("get_room_message", ({ message }) => {
-          setChats((prev) => [...prev, { message, me: false }]);
-        });
+        socketRef.current.on(
+          "get_room_message",
+          ({ message, userImage, userName, userId }) => {
+            setChats((prev) => [
+              ...prev,
+              { message, me: false, userImage, userName, userId },
+            ]);
+          }
+        );
         setRoomId(cell);
         // event listener of SSE
         es.onmessage = (e) => {

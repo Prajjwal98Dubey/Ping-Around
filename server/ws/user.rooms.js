@@ -15,9 +15,14 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   socket.on("rooms_list", ({ rooms }) => {
     rooms.forEach((room) => socket.join(room));
-    socket.on("post_room_message", ({ roomId, message }) => {
-      socket.broadcast.to(roomId).emit("get_room_message", { message });
-    });
+    socket.on(
+      "post_room_message",
+      ({ roomId, message, userImage, userName, userId }) => {
+        socket.broadcast
+          .to(roomId)
+          .emit("get_room_message", { message, userImage, userName, userId });
+      }
+    );
   });
 
   socket.on("disconnect", () => console.log("user disconnected !!!"));

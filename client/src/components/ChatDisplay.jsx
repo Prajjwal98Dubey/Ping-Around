@@ -17,6 +17,7 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
   const [selectedImage, setSelectedImage] = useState("");
   const [isImageZoom, setIsImageZoom] = useState(false);
   const [zoomImageUrl, setZoomImageUrl] = useState("");
+  const [isImageSelect, setIsImageSelect] = useState(false);
   useEffect(() => {
     const setScrollHeight = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -53,6 +54,7 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
         body: fileDetails,
       });
       imageUrl = res.publicUrl;
+      setIsImageSelect(false);
       setIsLoading(false);
     }
     socketRef.current.emit("post_room_message", {
@@ -78,6 +80,7 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
     setMessage("");
     setFileName("");
     setFileDetails({});
+    setIsImageSelect(false);
     setFileType("");
     setSelectedImage("");
     imageUrl = "";
@@ -108,7 +111,7 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
                   />
                 </div>
               ) : (
-                <div className="px-2 bg-green-600 font-bold w-fit h-fit py-2 rounded-md">
+                <div className="px-2 bg-green-600 font-bold  max-w-[300px] lg:max-w-[650px] h-fit py-2 rounded-md break-words">
                   <p className=" text-white text-[14px] font-bold my-[2px]">
                     {chat.message}
                   </p>
@@ -157,7 +160,7 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
                     />
                   </div>
                 ) : (
-                  <div>
+                  <div className="max-w-[300px] h-fit lg:max-w-[650px] break-words">
                     <p className=" text-white text-[14px] font-bold mb-[3px]">
                       {chat.message}
                     </p>
@@ -176,15 +179,6 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
           onChange={(e) => setMessage(e.target.value)}
           className="w-full h-full bg-[#313131] rounded-md text-white font-bold text-[16px] pr-[90px] pl-2 py-1"
         ></textarea>
-        {fileName && (
-          <div className="fixed top-0 left-3">
-            <img
-              src={URL.createObjectURL(selectedImage)}
-              alt="photo"
-              className="w-[70px] h-[70px] rounded-md"
-            />
-          </div>
-        )}
         <div
           className={`absolute right-0 top-3 h-fit w-fit px-4 rounded-md text-xl font-bold text-white flex`}
         >
@@ -197,6 +191,7 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
                   setFileType(e.target.files[0].type);
                   setFileDetails(e.target.files[0]);
                   setSelectedImage(e.target.files[0]);
+                  setIsImageSelect(true);
                 }}
                 type="file"
                 className="sr-only"
@@ -214,6 +209,30 @@ const ChatDisplay = ({ chats, socketRef, roomId, setChats }) => {
           </div>
         </div>
       </div>
+
+      {isImageSelect && (
+        <div
+          onClick={() => setIsImageSelect(false)}
+          className="transition duration-300 fixed top-0 left-0 bg-black bg-opacity-50 backdrop-blur-sm z-10 w-full min-h-screen"
+        >
+          <div className="transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 fixed">
+            <img
+              onClick={(e) => e.stopPropagation()}
+              src={URL.createObjectURL(fileDetails)}
+              alt="image_zoom"
+              className="w-[400px] h-[300px] rounded-md z-50 blur-none"
+            />
+            <div className="flex justify-center items-center my-2">
+              <button
+                onClick={handleSendMessage}
+                className="px-4 py-2 rounded-md text-white bg-green-500 hover:bg-green-600 cursor-pointer font-semibold"
+              >
+                Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {isImageZoom && (
         <div
           onClick={() => setIsImageZoom(false)}
